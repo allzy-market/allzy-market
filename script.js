@@ -85,3 +85,14 @@ function removeFromCart(name) {
 }
 
 displayCart();
+
+function checkout() {
+  if (cart.length === 0) {
+    alert("Your shopping cart is empty. Please add a product first.");
+    return;
+  }
+
+  alert("Checkout is coming next! Your cart total is ₦" +
+    cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      .toLocaleString("en-NG"));
+}
