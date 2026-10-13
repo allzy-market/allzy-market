@@ -38,7 +38,25 @@ if (productList) {
 let cart = [];
 
 function addToCart(name, price) {
-  cart.push({ name, price });
+  const existingItem = cart.find(item => item.name === name);
 
-  alert(`${name} added to your cart!`);
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      name: name,
+      price: price,
+      quantity: 1
+    });
+  }
+
+  const totalItems = cart.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
+  alert(
+    `${name} added to your cart!\n` +
+    `Items in cart: ${totalItems}`
+  );
 }
