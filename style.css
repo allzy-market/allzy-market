@@ -154,3 +154,51 @@ footer {
     padding: 16px;
   }
 }
+
+/* Fix Allzy Market layout on mobile */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#checkout-form {
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#customer-order-form {
+  width: 100%;
+}
+
+#customer-order-form label {
+  display: block;
+  width: 100%;
+}
+
+#customer-order-form input,
+#customer-order-form textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  font-size: 16px;
+}
+
+#customer-order-form textarea {
+  resize: vertical;
+}
+
+@media (max-width: 600px) {
+  main {
+    width: 100%;
+    padding: 12px;
+  }
+
+  #checkout-form {
+    padding: 16px;
+  }
+}
