@@ -96,3 +96,43 @@ function checkout() {
     cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
       .toLocaleString("en-NG"));
 }
+
+const orderForm = document.getElementById("customer-order-form");
+
+if (orderForm) {
+  orderForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    if (cart.length === 0) {
+      alert("Your cart is empty. Please add products first.");
+      return;
+    }
+
+    const customerName = document.getElementById("customer-name").value.trim();
+    const customerPhone = document.getElementById("customer-phone").value.trim();
+    const customerAddress = document.getElementById("customer-address").value.trim();
+    const customerCity = document.getElementById("customer-city").value.trim();
+    const customerState = document.getElementById("customer-state").value.trim();
+
+    if (!customerName || !customerPhone || !customerAddress ||
+        !customerCity || !customerState) {
+      alert("Please complete all delivery details.");
+      return;
+    }
+
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    alert(
+      "Order summary\n\n" +
+      "Customer: " + customerName + "\n" +
+      "Phone: " + customerPhone + "\n" +
+      "Address: " + customerAddress + ", " +
+      customerCity + ", " + customerState + "\n" +
+      "Order total: ₦" + total.toLocaleString("en-NG") +
+      "\n\nThis is a test only. Your order has not been submitted."
+    );
+  });
+}
