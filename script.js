@@ -37,26 +37,51 @@ if (productList) {
 
 let cart = [];
 
+function displayCart() {
+  const cartItems = document.getElementById("cart-items");
+  const cartTotal = document.getElementById("cart-total");
+
+  if (!cartItems || !cartTotal) return;
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = "<p>Your cart is empty.</p>";
+    cartTotal.textContent = "Total: ₦0";
+    return;
+  }
+
+  cartItems.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <p><strong>${item.name}</strong></p>
+      <p>Quantity: ${item.quantity}</p>
+      <p>Price: ₦${item.price.toLocaleString("en-NG")}</p>
+      <p>Subtotal: ₦${(item.price * item.quantity).toLocaleString("en-NG")}</p>
+      <button onclick="removeFromCart('${item.name}')">Remove</button>
+    </div>
+  `).join("");
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  cartTotal.textContent = `Total: ₦${total.toLocaleString("en-NG")}`;
+}
+
 function addToCart(name, price) {
   const existingItem = cart.find(item => item.name === name);
 
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({
-      name: name,
-      price: price,
-      quantity: 1
-    });
+    cart.push({ name, price, quantity: 1 });
   }
 
-  const totalItems = cart.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
-
-  alert(
-    `${name} added to your cart!\n` +
-    `Items in cart: ${totalItems}`
-  );
+  displayCart();
 }
+
+function removeFromCart(name) {
+  cart = cart.filter(item => item.name !== name);
+  displayCart();
+}
+
+displayCart();
