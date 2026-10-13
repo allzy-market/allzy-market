@@ -1,3 +1,7 @@
+const SUPABASE_URL = "https://xdmuygtrzqznbywvzypl.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UGRcI_2l6Vpl7QroGTVFiw_J818DtOC";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
 const products = [
   {
     name: "Classic T-Shirt",
