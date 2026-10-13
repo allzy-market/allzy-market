@@ -1,6 +1,7 @@
 const products = [
   {
     name: "Classic T-Shirt",
+    image: "tshirt.jpg",
     price: 8500,
     category: "Fashion",
     description: "A comfortable everyday T-shirt."
