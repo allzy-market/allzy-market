@@ -148,7 +148,7 @@ function checkout() {
 const orderForm = document.getElementById("customer-order-form");
 
 if (orderForm) {
-  orderForm.addEventListener("submit", function(event) {
+  orderForm.addEventListener("submit", async function(event) {
     event.preventDefault();
 
     if (cart.length === 0) {
@@ -168,20 +168,60 @@ if (orderForm) {
       return;
     }
 
-    const total = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    const submitButton = orderForm.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting Order...";
+    }
 
-    alert(
-      "Order summary\n\n" +
-      "Customer: " + customerName + "\n" +
-      "Phone: " + customerPhone + "\n" +
-      "Address: " + customerAddress + ", " +
-      customerCity + ", " + customerState + "\n" +
-      "Order total: ₦" + total.toLocaleString("en-NG") +
-      "\n\nThis is a test only. Your order has not been submitted."
-    );
+    try {
+      const { data, error } = await supabaseClient.functions.invoke(
+        "submit-order",
+        {
+          body: {
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            delivery_address: customerAddress,
+            delivery_city: customerCity,
+            delivery_state: customerState,
+            items: cart.map(item => ({
+              product_id: item.id,
+              quantity: item.quantity
+            }))
+          }
+        }
+      );
+
+      if (error) {
+        console.error("Order submission failed:", error);
+        alert("We couldn't submit your order. Please try again.");
+        return;
+      }
+
+      if (!data || !data.success) {
+        alert(data?.error || "We couldn't submit your order. Please try again.");
+        return;
+      }
+
+      alert(
+        "Thank you! Your order has been submitted successfully.\n\n" +
+        "Order number: " + data.order_id + "\n" +
+        "Total: ₦" + Number(data.total_amount).toLocaleString("en-NG")
+      );
+
+      cart = [];
+      displayCart();
+      orderForm.reset();
+
+    } catch (error) {
+      console.error("Order submission error:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Place Order";
+      }
+    }
   });
 }
 
