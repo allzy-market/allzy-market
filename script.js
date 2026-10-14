@@ -93,7 +93,7 @@ function displayCart() {
   cartTotal.textContent = `Total: ₦${total.toLocaleString("en-NG")}`;
 }
 
-function addToCart(id, name, price) {
+window.addToCart = function(id, name, price) {
   const existingItem = cart.find(item => item.id === id);
 
   if (existingItem) {
