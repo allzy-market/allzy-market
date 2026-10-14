@@ -52,7 +52,7 @@ async function loadProducts() {
       <h3>${product.name}</h3>
       <p>${product.description || ""}</p>
       <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
-      <button onclick="addToCart(${JSON.stringify(product.name)}, ${Number(product.price)})">
+      <button onclick="addToCart(${Number(product.id)}, ${JSON.stringify(product.name)}, ${Number(product.price)})">
         Add to Cart
       </button>
     </article>
@@ -93,13 +93,13 @@ function displayCart() {
   cartTotal.textContent = `Total: ₦${total.toLocaleString("en-NG")}`;
 }
 
-function addToCart(name, price) {
-  const existingItem = cart.find(item => item.name === name);
+function addToCart(id, name, price) {
+  const existingItem = cart.find(item => item.id === id);
 
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({ name, price, quantity: 1 });
+    cart.push({ id, name, price, quantity: 1 });
   }
 
   displayCart();
