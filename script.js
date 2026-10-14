@@ -24,20 +24,42 @@ const products = [
   }
 ];
 
-const productList = document.getElementById("products");
+async function loadProducts() {
+  const productList = document.getElementById("products");
 
-if (productList) {
-  productList.innerHTML = products.map(product => `
+  if (!productList) return;
+
+  productList.innerHTML = "<p>Loading products...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .eq("is_available", true);
+
+  if (error) {
+    console.error("Could not load products:", error);
+    productList.innerHTML = "<p>Unable to load products. Please try again later.</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    productList.innerHTML = "<p>No products available yet.</p>";
+    return;
+  }
+
+  productList.innerHTML = data.map(product => `
     <article class="product">
       <h3>${product.name}</h3>
-      <p>${product.description}</p>
-      <p>₦${product.price.toLocaleString("en-NG")}</p>
-      <button onclick="addToCart('${product.name}', ${product.price})">
+      <p>${product.description || ""}</p>
+      <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
+      <button onclick="addToCart(${JSON.stringify(product.name)}, ${Number(product.price)})">
         Add to Cart
       </button>
     </article>
   `).join("");
 }
+
+loadProducts();
 
 let cart = [];
 
