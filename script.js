@@ -140,3 +140,6 @@ if (orderForm) {
     );
   });
 }
+
+console.log("Supabase library loaded:", !!window.supabase);
+console.log("Allzy Market Supabase client created:", !!supabaseClient);
