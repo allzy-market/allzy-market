@@ -60,6 +60,57 @@
     <button type="submit">Place Order</button>
   </form>
 </section>
+      <section id="seller-registration" class="cart-section">
+      <h2>Become a Seller on Allzy Market</h2>
+      <p>Create your store and start selling to customers.</p>
+
+      <form id="seller-registration-form">
+        <label for="seller-store-name">Store Name</label>
+        <input
+          type="text"
+          id="seller-store-name"
+          placeholder="Enter your store name"
+          required
+        >
+
+        <label for="seller-phone">Phone Number</label>
+        <input
+          type="tel"
+          id="seller-phone"
+          placeholder="Enter your phone number"
+          required
+        >
+
+        <label for="seller-address">Business Address</label>
+        <textarea
+          id="seller-address"
+          placeholder="Enter your business address"
+          rows="3"
+          required
+        ></textarea>
+
+        <label for="seller-email">Email Address</label>
+        <input
+          type="email"
+          id="seller-email"
+          placeholder="Enter your email"
+          required
+        >
+
+        <label for="seller-password">Password</label>
+        <input
+          type="password"
+          id="seller-password"
+          minlength="8"
+          placeholder="Create a password (at least 8 characters)"
+          required
+        >
+
+        <button type="submit">Register as a Seller</button>
+      </form>
+
+      <p id="seller-registration-message" role="status"></p>
+    </section>
   </main>
 
   <footer>
