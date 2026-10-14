@@ -135,9 +135,14 @@ function checkout() {
     return;
   }
 
-  alert("Checkout is coming next! Your cart total is ₦" +
-    cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      .toLocaleString("en-NG"));
+  const checkoutForm = document.getElementById("checkout-form");
+
+  if (checkoutForm) {
+    checkoutForm.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
 }
 
 const orderForm = document.getElementById("customer-order-form");
