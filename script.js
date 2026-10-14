@@ -227,3 +227,51 @@ if (orderForm) {
 
 console.log("Supabase library loaded:", !!window.supabase);
 console.log("Allzy Market Supabase client created:", !!supabaseClient);
+
+// Allzy Market seller registration
+const sellerForm = document.getElementById("seller-registration-form");
+
+if (sellerForm) {
+  sellerForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const message = document.getElementById("seller-registration-message");
+    const button = sellerForm.querySelector('button[type="submit"]');
+
+    const storeName = document.getElementById("seller-store-name").value.trim();
+    const phone = document.getElementById("seller-phone").value.trim();
+    const address = document.getElementById("seller-address").value.trim();
+    const email = document.getElementById("seller-email").value.trim();
+    const password = document.getElementById("seller-password").value;
+
+    message.textContent = "Registering your seller account...";
+    button.disabled = true;
+
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            store_name: storeName,
+            phone: phone,
+            address: address
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        message.textContent = data.session
+          ? "Registration successful! Your seller account is pending approval."
+          : "Registration received! Check your email to confirm your account. Your seller profile will be pending approval.";
+        sellerForm.reset();
+      }
+    } catch (error) {
+      message.textContent = "Registration failed: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
