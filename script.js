@@ -47,16 +47,33 @@ async function loadProducts() {
     return;
   }
 
-  productList.innerHTML = data.map(product => `
-    <article class="product">
-      <h3>${product.name}</h3>
-      <p>${product.description || ""}</p>
-      <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
-      <button onclick="addToCart(${Number(product.id)}, ${JSON.stringify(product.name)}, ${Number(product.price)})">
-        Add to Cart
-      </button>
-    </article>
-  `).join("");
+  productList.innerHTML = data.map((product, index) => `
+  <article class="product">
+    <h3>${product.name}</h3>
+    <p>${product.description || ""}</p>
+    <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
+    <button type="button" class="add-to-cart" data-index="${index}">
+      Add to Cart
+    </button>
+  </article>
+`).join("");
+
+productList.querySelectorAll(".add-to-cart").forEach(button => {
+  button.addEventListener("click", function() {
+    const product = data[Number(this.dataset.index)];
+
+    if (!product) {
+      alert("Unable to find this product. Please refresh and try again.");
+      return;
+    }
+
+    window.addToCart(
+      Number(product.id),
+      product.name,
+      Number(product.price)
+    );
+  });
+});
 }
 
 loadProducts();
