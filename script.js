@@ -290,12 +290,12 @@ if (sellerProductForm) {
     const price = Number(document.getElementById("product-price").value);
     const category = document.getElementById("product-category").value.trim();
     const description = document.getElementById("product-description").value.trim();
-    const imageUrl = document.getElementById("product-image").value.trim();
+    const imageInput = document.getElementById("product-image");
+const imageFile = imageInput.files[0];
 
-    if (!name || !category || !description || !imageUrl || price <= 0) {
-      message.textContent = "Please complete every field with valid information.";
-      return;
-    }
+    if(!name||!category||!description||!imageFile||price<=0) {
+ message.textContent="Please complete every field and choose a product photo.";return;
+}
 
     message.textContent = "Checking your seller account...";
     button.disabled = true;
@@ -324,19 +324,45 @@ if (sellerProductForm) {
         throw new Error("Your seller account must be approved before adding products.");
       }
 
-      const { error: insertError } = await supabaseClient
-        .from("products")
-        .insert({
-          name: name,
-          price: price,
-          category: category,
-          description: description,
-          image_url: imageUrl,
-          seller_id: user.id,
-          is_available: true
-        });
+      const safeFileName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+const imagePath = `${user.id}/${Date.now()}-${safeFileName}`;
 
-      if (insertError) throw insertError;
+if (!imageFile.type.startsWith("image/")) {
+  throw new Error("Please choose a valid image file.");
+}
+
+if (imageFile.size > 5 * 1024 * 1024) {
+  throw new Error("Your photo must be smaller than 5 MB.");
+}
+
+message.textContent = "Uploading product photo...";
+
+const { error: imageError } = await supabaseClient.storage
+  .from("product-images")
+  .upload(imagePath, imageFile, {
+    cacheControl: "3600",
+    upsert: false
+  });
+
+if (imageError) throw imageError;
+
+const { data: imageData } = supabaseClient.storage
+  .from("product-images")
+  .getPublicUrl(imagePath);
+
+const imageUrl = imageData.publicUrl;
+
+const { error: insertError } = await supabaseClient.from("products").insert({
+  name,
+  price,
+  category,
+  description,
+  image_url: imageUrl,
+  seller_id: user.id,
+  is_available: true
+});
+
+if (insertError) throw insertError;
 
       message.textContent = "Product added successfully!";
       sellerProductForm.reset();
