@@ -348,3 +348,110 @@ if (sellerProductForm) {
     }
   });
 }
+
+// Allzy Market seller login and logout
+const sellerLoginForm = document.getElementById("seller-login-form");
+const sellerLogoutButton = document.getElementById("seller-logout-button");
+
+async function updateSellerLoginStatus() {
+  const message = document.getElementById("seller-login-message");
+  const productSection = document.getElementById("seller-products");
+
+  if (!message || !productSection) return;
+
+  try {
+    const { data, error } = await supabaseClient.auth.getUser();
+
+    if (error) throw error;
+
+    if (!data.user) {
+      message.textContent = "Please log in with your seller account.";
+      if (sellerLogoutButton) sellerLogoutButton.hidden = true;
+      productSection.hidden = true;
+      return;
+    }
+
+    const { data: seller, error: sellerError } = await supabaseClient
+      .from("seller_profiles")
+      .select("store_name, status")
+      .eq("id", data.user.id)
+      .single();
+
+    if (sellerError) throw sellerError;
+
+    if (sellerLoginForm) sellerLoginForm.hidden = true;
+    if (sellerLogoutButton) sellerLogoutButton.hidden = false;
+
+    if (seller.status === "approved") {
+      message.textContent = "Welcome, " + seller.store_name + "! Your seller account is approved.";
+      productSection.hidden = false;
+    } else {
+      message.textContent = "Your seller account is pending approval.";
+      productSection.hidden = true;
+    }
+  } catch (error) {
+    console.error("Seller status error:", error);
+    message.textContent = "Could not check seller status. Please refresh and try again.";
+    productSection.hidden = true;
+  }
+}
+
+if (sellerLoginForm) {
+  sellerLoginForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const message = document.getElementById("seller-login-message");
+    const button = sellerLoginForm.querySelector('button[type="submit"]');
+
+    const email = document.getElementById("seller-login-email").value.trim();
+    const password = document.getElementById("seller-login-password").value;
+
+    message.textContent = "Logging in...";
+    button.disabled = true;
+
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) throw error;
+
+      message.textContent = "Login successful. Checking your seller account...";
+      await updateSellerLoginStatus();
+    } catch (error) {
+      message.textContent = "Login failed: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+if (sellerLogoutButton) {
+  sellerLogoutButton.addEventListener("click", async function () {
+    const message = document.getElementById("seller-login-message");
+
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) throw error;
+
+      if (sellerLoginForm) {
+        sellerLoginForm.hidden = false;
+        sellerLoginForm.reset();
+      }
+
+      message.textContent = "You have logged out.";
+      sellerLogoutButton.hidden = true;
+
+      const productSection = document.getElementById("seller-products");
+      if (productSection) productSection.hidden = true;
+    } catch (error) {
+      message.textContent = "Logout failed: " + error.message;
+    }
+  });
+}
+
+if (sellerLoginForm) {
+  updateSellerLoginStatus();
+}
