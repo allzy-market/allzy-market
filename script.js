@@ -352,7 +352,7 @@ const { data: imageData } = supabaseClient.storage
 
 const imageUrl = imageData.publicUrl;
 
-const { error: insertError } = await supabaseClient.from("products").insert({
+const { error: insertError } = await supabaseClient.schema("public").from("products").insert({
   name,
   price,
   category,
