@@ -47,8 +47,15 @@ async function loadProducts() {
     return;
   }
 
-  productList.innerHTML = data.map((product, index) => `
+    productList.innerHTML = data.map((product, index) => `
   <article class="product">
+    ${product.image_url ? `
+      <img
+        src="${product.image_url}"
+        alt="${product.name}"
+        style="width:100%;max-width:300px;height:250px;object-fit:contain;"
+      >
+    ` : ""}
     <h3>${product.name}</h3>
     <p>${product.description || ""}</p>
     <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
