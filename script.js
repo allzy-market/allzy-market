@@ -275,3 +275,76 @@ if (sellerForm) {
     }
   });
 }
+
+// Allzy Market seller product upload
+const sellerProductForm = document.getElementById("seller-product-form");
+
+if (sellerProductForm) {
+  sellerProductForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const message = document.getElementById("seller-product-message");
+    const button = sellerProductForm.querySelector('button[type="submit"]');
+
+    const name = document.getElementById("product-name").value.trim();
+    const price = Number(document.getElementById("product-price").value);
+    const category = document.getElementById("product-category").value.trim();
+    const description = document.getElementById("product-description").value.trim();
+    const imageUrl = document.getElementById("product-image").value.trim();
+
+    if (!name || !category || !description || !imageUrl || price <= 0) {
+      message.textContent = "Please complete every field with valid information.";
+      return;
+    }
+
+    message.textContent = "Checking your seller account...";
+    button.disabled = true;
+
+    try {
+      const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
+
+      if (userError) throw userError;
+
+      const user = userData.user;
+
+      if (!user) {
+        throw new Error("Please log in before adding a product.");
+      }
+
+      const { data: seller, error: sellerError } = await supabaseClient
+        .from("seller_profiles")
+        .select("status")
+        .eq("id", user.id)
+        .single();
+
+      if (sellerError) throw sellerError;
+
+      if (seller.status !== "approved") {
+        throw new Error("Your seller account must be approved before adding products.");
+      }
+
+      const { error: insertError } = await supabaseClient
+        .from("products")
+        .insert({
+          name: name,
+          price: price,
+          category: category,
+          description: description,
+          image_url: imageUrl,
+          seller_id: user.id,
+          is_available: true
+        });
+
+      if (insertError) throw insertError;
+
+      message.textContent = "Product added successfully!";
+      sellerProductForm.reset();
+    } catch (error) {
+      console.error("Seller product upload error:", error);
+      message.textContent = "Could not add product: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
