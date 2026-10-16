@@ -50,7 +50,36 @@ async function loadProducts() {
     return;
   }
 
-  allProducts = data || [];
+  allProducts = [
+  {
+    id: "starter-tshirt",
+    name: "Classic T-Shirt",
+    description: "Comfortable everyday T-shirt for casual wear.",
+    price: 8500,
+    category: "Fashion",
+    image_url: "",
+    is_available: true
+  },
+  {
+    id: "starter-bag",
+    name: "Fashion Bag",
+    description: "A stylish bag for everyday use.",
+    price: 15000,
+    category: "Bags",
+    image_url: "",
+    is_available: true
+  },
+  {
+    id: "starter-slippers",
+    name: "Fashion Slippers",
+    description: "Comfortable slippers for everyday wear.",
+    price: 12000,
+    category: "Shoes",
+    image_url: "",
+    is_available: true
+  },
+  ...(data || [])
+];
 
   if (allProducts.length === 0) {
     productList.innerHTML = "<p>No products available yet.</p>";
@@ -427,7 +456,8 @@ const { error: insertError } = await supabaseClient.schema("public").from("produ
 if (insertError) throw insertError;
 
       message.textContent = "Product added successfully!";
-      sellerProductForm.reset();
+sellerProductForm.reset();
+await loadProducts();
     } catch (error) {
       console.error("Seller product upload error:", error);
       message.textContent = "Could not add product: " + error.message;
