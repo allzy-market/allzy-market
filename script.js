@@ -97,8 +97,6 @@ function renderProducts(productsToShow) {
 }
 
 const searchInput = document.getElementById("product-search");
-
-const searchInput = document.getElementById("product-search");
 const categorySelect = document.getElementById("product-category");
 
 function filterProducts() {
@@ -346,7 +344,7 @@ if (sellerProductForm) {
 
     const name = document.getElementById("product-name").value.trim();
     const price = Number(document.getElementById("product-price").value);
-    const category = document.getElementById("product-category").value.trim();
+    const category = document.getElementById("seller-product-category").value.trim();
     const description = document.getElementById("product-description").value.trim();
     const imageInput = document.getElementById("product-image");
 const imageFile = imageInput.files[0];
