@@ -46,20 +46,24 @@ async function loadProducts() {
 
   allProducts = data || [];
 
-  if (!data || data.length === 0) {
+  if (allProducts.length === 0) {
     productList.innerHTML = "<p>No products available yet.</p>";
     return;
   }
 
-  const searchInput = document.getElementById("product-search");
-const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : "";
+  renderProducts(allProducts);
+}
 
-const filteredProducts = allProducts.filter(product =>
-  (product.name || "").toLowerCase().includes(searchTerm) ||
-  (product.description || "").toLowerCase().includes(searchTerm)
-);
+function renderProducts(productsToShow) {
+  const productList = document.getElementById("products");
+  if (!productList) return;
 
-productList.innerHTML = filteredProducts.map((product, index) => `
+  if (productsToShow.length === 0) {
+    productList.innerHTML = "<p>No matching products found.</p>";
+    return;
+  }
+
+  productList.innerHTML = productsToShow.map((product, index) => `
     <article class="product">
       ${product.image_url ? `
         <img
@@ -79,12 +83,9 @@ productList.innerHTML = filteredProducts.map((product, index) => `
 
   productList.querySelectorAll(".add-to-cart").forEach(button => {
     button.addEventListener("click", function() {
-      const product = filteredProducts[Number(this.dataset.index)];
+      const product = productsToShow[Number(this.dataset.index)];
 
-      if (!product) {
-        alert("Unable to find this product. Please refresh and try again.");
-        return;
-      }
+      if (!product) return;
 
       window.addToCart(
         Number(product.id),
@@ -92,7 +93,7 @@ productList.innerHTML = filteredProducts.map((product, index) => `
         Number(product.price)
       );
     });
-   });
+  });
 }
 
 const searchInput = document.getElementById("product-search");
@@ -103,106 +104,12 @@ if (searchInput) {
 
     const filteredProducts = allProducts.filter(product =>
       (product.name || "").toLowerCase().includes(searchTerm) ||
-      (product.description || "").toLowerCase().includes(searchTerm)
+      (product.description || "").toLowerCase().includes(searchTerm) ||
+      (product.category || "").toLowerCase().includes(searchTerm)
     );
 
-    const productList = document.getElementById("products");
-
-    productList.innerHTML = filteredProducts.map((product, index) => `
-      <article class="product">
-        ${product.image_url ? `
-          <img
-            src="${product.image_url}"
-            alt="${product.name}"
-            style="width:100%;max-width:300px;height:250px;object-fit:contain;"
-          >
-        ` : ""}
-        <h3>${product.name}</h3>
-        <p>${product.description || ""}</p>
-        <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
-        <button type="button" class="add-to-cart" data-index="${index}">
-          Add to Cart
-        </button>
-      </article>
-    `).join("");
-
-    productList.querySelectorAll(".add-to-cart").forEach(button => {
-      button.addEventListener("click", function() {
-        const product = filteredProducts[Number(this.dataset.index)];
-
-        if (!product) {
-          alert("Unable to find this product. Please refresh and try again.");
-          return;
-        }
-
-        window.addToCart(
-          Number(product.id),
-          product.name,
-          Number(product.price)
-        );
-      });
-    });
-
-    if (filteredProducts.length === 0) {
-      productList.innerHTML = "<p>No matching products found.</p>";
-    }
+    renderProducts(filteredProducts);
   });
-}
-
-loadProducts();
-
-  productList.innerHTML = "<p>Loading products...</p>";
-
-  const { data, error } = await supabaseClient
-    .from("products")
-    .select("*")
-    .eq("is_available", true);
-
-  if (error) {
-    console.error("Could not load products:", error);
-    productList.innerHTML = "<p>Unable to load products. Please try again later.</p>";
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    productList.innerHTML = "<p>No products available yet.</p>";
-    return;
-  }
-
-    productList.innerHTML = data.map((product, index) => `
-  <article class="product">
-    ${product.image_url ? `
-      <img
-        src="${product.image_url}"
-        alt="${product.name}"
-        style="width:100%;max-width:300px;height:250px;object-fit:contain;"
-      >
-    ` : ""}
-    <h3>${product.name}</h3>
-    <p>${product.description || ""}</p>
-    <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
-    <button type="button" class="add-to-cart" data-index="${index}">
-      Add to Cart
-    </button>
-  </article>
-`).join("");
-
-productList.querySelectorAll(".add-to-cart").forEach(button => {
-  button.addEventListener("click", function() {
-    const product = data[Number(this.dataset.index)];
-
-    if (!product) {
-      alert("Unable to find this product. Please refresh and try again.");
-      return;
-    }
-
-    window.addToCart(
-      Number(product.id),
-      product.name,
-      Number(product.price)
-    );
-  });
-});
 }
 
 loadProducts();
