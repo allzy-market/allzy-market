@@ -23,11 +23,22 @@
   <h2>Explore Products</h2>
 
   <input
-    type="search"
-    id="product-search"
-    placeholder="Search for products..."
-    aria-label="Search products"
-  >
+  type="search"
+  id="product-search"
+  placeholder="Search for products..."
+  aria-label="Search products"
+>
+
+<select id="product-category" aria-label="Filter by category">
+  <option value="">All Categories</option>
+  <option value="Fashion">Fashion</option>
+  <option value="Bags">Bags</option>
+  <option value="Shoes">Shoes</option>
+  <option value="Electronics">Electronics</option>
+  <option value="Beauty">Beauty</option>
+  <option value="Kids">Kids</option>
+  <option value="Home & Living">Home & Living</option>
+</select>
 
   <div id="products"></div>
 </section>
