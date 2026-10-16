@@ -51,7 +51,15 @@ async function loadProducts() {
     return;
   }
 
-  productList.innerHTML = data.map((product, index) => `
+  const searchInput = document.getElementById("product-search");
+const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+const filteredProducts = allProducts.filter(product =>
+  (product.name || "").toLowerCase().includes(searchTerm) ||
+  (product.description || "").toLowerCase().includes(searchTerm)
+);
+
+productList.innerHTML = filteredProducts.map((product, index) => `
     <article class="product">
       ${product.image_url ? `
         <img
@@ -71,7 +79,7 @@ async function loadProducts() {
 
   productList.querySelectorAll(".add-to-cart").forEach(button => {
     button.addEventListener("click", function() {
-      const product = data[Number(this.dataset.index)];
+      const product = filteredProducts[Number(this.dataset.index)];
 
       if (!product) {
         alert("Unable to find this product. Please refresh and try again.");
