@@ -24,10 +24,70 @@ const products = [
   }
 ];
 
+let allProducts = [];
+
 async function loadProducts() {
   const productList = document.getElementById("products");
-
   if (!productList) return;
+
+  productList.innerHTML = "<p>Loading products...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .eq("is_available", true);
+
+  if (error) {
+    console.error("Could not load products:", error);
+    productList.innerHTML =
+      "<p>Unable to load products. Please try again later.</p>";
+    return;
+  }
+
+  allProducts = data || [];
+
+  if (!data || data.length === 0) {
+    productList.innerHTML = "<p>No products available yet.</p>";
+    return;
+  }
+
+  productList.innerHTML = data.map((product, index) => `
+    <article class="product">
+      ${product.image_url ? `
+        <img
+          src="${product.image_url}"
+          alt="${product.name}"
+          style="width:100%;max-width:300px;height:250px;object-fit:contain;"
+        >
+      ` : ""}
+      <h3>${product.name}</h3>
+      <p>${product.description || ""}</p>
+      <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
+      <button type="button" class="add-to-cart" data-index="${index}">
+        Add to Cart
+      </button>
+    </article>
+  `).join("");
+
+  productList.querySelectorAll(".add-to-cart").forEach(button => {
+    button.addEventListener("click", function() {
+      const product = data[Number(this.dataset.index)];
+
+      if (!product) {
+        alert("Unable to find this product. Please refresh and try again.");
+        return;
+      }
+
+      window.addToCart(
+        Number(product.id),
+        product.name,
+        Number(product.price)
+      );
+    });
+  });
+}
+
+loadProducts();
 
   productList.innerHTML = "<p>Loading products...</p>";
 
