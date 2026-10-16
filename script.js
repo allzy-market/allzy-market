@@ -2,28 +2,6 @@ const SUPABASE_URL = "https://xdmuygtrzqznbywvzypl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UGRcI_2l6Vpl7QroGTVFiw_J818DtOC";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const products = [
-  {
-    name: "Classic T-Shirt",
-    image: "tshirt.jpg",
-    price: 8500,
-    category: "Fashion",
-    description: "A comfortable everyday T-shirt."
-  },
-  {
-    name: "Fashion Bag",
-    price: 15000,
-    category: "Bags",
-    description: "A stylish bag for everyday use."
-  },
-  {
-    name: "Fashion Slippers",
-    price: 12000,
-    category: "Shoes",
-    description: "Comfortable slippers for everyday wear."
-  }
-];
-
 let allProducts = [];
 
 async function loadProducts() {
