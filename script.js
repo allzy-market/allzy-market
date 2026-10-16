@@ -92,6 +92,60 @@ productList.innerHTML = filteredProducts.map((product, index) => `
         Number(product.price)
       );
     });
+   });
+}
+
+const searchInput = document.getElementById("product-search");
+
+if (searchInput) {
+  searchInput.addEventListener("input", function() {
+    const searchTerm = this.value.toLowerCase().trim();
+
+    const filteredProducts = allProducts.filter(product =>
+      (product.name || "").toLowerCase().includes(searchTerm) ||
+      (product.description || "").toLowerCase().includes(searchTerm)
+    );
+
+    const productList = document.getElementById("products");
+
+    productList.innerHTML = filteredProducts.map((product, index) => `
+      <article class="product">
+        ${product.image_url ? `
+          <img
+            src="${product.image_url}"
+            alt="${product.name}"
+            style="width:100%;max-width:300px;height:250px;object-fit:contain;"
+          >
+        ` : ""}
+        <h3>${product.name}</h3>
+        <p>${product.description || ""}</p>
+        <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
+        <button type="button" class="add-to-cart" data-index="${index}">
+          Add to Cart
+        </button>
+      </article>
+    `).join("");
+
+    productList.querySelectorAll(".add-to-cart").forEach(button => {
+      button.addEventListener("click", function() {
+        const product = filteredProducts[Number(this.dataset.index)];
+
+        if (!product) {
+          alert("Unable to find this product. Please refresh and try again.");
+          return;
+        }
+
+        window.addToCart(
+          Number(product.id),
+          product.name,
+          Number(product.price)
+        );
+      });
+    });
+
+    if (filteredProducts.length === 0) {
+      productList.innerHTML = "<p>No matching products found.</p>";
+    }
   });
 }
 
