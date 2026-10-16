@@ -98,18 +98,40 @@ function renderProducts(productsToShow) {
 
 const searchInput = document.getElementById("product-search");
 
-if (searchInput) {
-  searchInput.addEventListener("input", function() {
-    const searchTerm = this.value.toLowerCase().trim();
+const searchInput = document.getElementById("product-search");
+const categorySelect = document.getElementById("product-category");
 
-    const filteredProducts = allProducts.filter(product =>
+function filterProducts() {
+  const searchTerm = searchInput
+    ? searchInput.value.toLowerCase().trim()
+    : "";
+
+  const selectedCategory = categorySelect
+    ? categorySelect.value.toLowerCase()
+    : "";
+
+  const filteredProducts = allProducts.filter(product => {
+    const matchesSearch =
       (product.name || "").toLowerCase().includes(searchTerm) ||
       (product.description || "").toLowerCase().includes(searchTerm) ||
-      (product.category || "").toLowerCase().includes(searchTerm)
-    );
+      (product.category || "").toLowerCase().includes(searchTerm);
 
-    renderProducts(filteredProducts);
+    const matchesCategory =
+      !selectedCategory ||
+      (product.category || "").toLowerCase() === selectedCategory;
+
+    return matchesSearch && matchesCategory;
   });
+
+  renderProducts(filteredProducts);
+}
+
+if (searchInput) {
+  searchInput.addEventListener("input", filterProducts);
+}
+
+if (categorySelect) {
+  categorySelect.addEventListener("change", filterProducts);
 }
 
 loadProducts();
