@@ -2,35 +2,7 @@ const SUPABASE_URL = "https://xdmuygtrzqznbywvzypl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UGRcI_2l6Vpl7QroGTVFiw_J818DtOC";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-let allProducts = [
-  {
-    id: "starter-tshirt",
-    name: "Classic T-Shirt",
-    description: "Comfortable everyday T-shirt for casual wear.",
-    price: 8500,
-    category: "Fashion",
-    image_url: "",
-    is_available: true
-  },
-  {
-    id: "starter-bag",
-    name: "Fashion Bag",
-    description: "A stylish bag for everyday use.",
-    price: 15000,
-    category: "Bags",
-    image_url: "",
-    is_available: true
-  },
-  {
-    id: "starter-slippers",
-    name: "Fashion Slippers",
-    description: "Comfortable slippers for everyday wear.",
-    price: 12000,
-    category: "Shoes",
-    image_url: "",
-    is_available: true
-  }
-];
+let allProducts = [];
 
 async function loadProducts() {
   const productList = document.getElementById("products");
@@ -50,46 +22,14 @@ async function loadProducts() {
     return;
   }
 
-  allProducts = [
-  {
-    id: "starter-tshirt",
-    name: "Classic T-Shirt",
-    description: "Comfortable everyday T-shirt for casual wear.",
-    price: 8500,
-    category: "Fashion",
-    image_url: "",
-    is_available: true
-  },
-  {
-    id: "starter-bag",
-    name: "Fashion Bag",
-    description: "A stylish bag for everyday use.",
-    price: 15000,
-    category: "Bags",
-    image_url: "",
-    is_available: true
-  },
-  {
-    id: "starter-slippers",
-    name: "Fashion Slippers",
-    description: "Comfortable slippers for everyday wear.",
-    price: 12000,
-    category: "Shoes",
-    image_url: "",
-    is_available: true
-  },
-  ...(data || [])
-];
+  allProducts = data || [];
 
-  if (allProducts.length === 0) {
-    productList.innerHTML = "<p>No products available yet.</p>";
-    return;
-  }
-
-  renderProducts(allProducts);
+if (allProducts.length === 0) {
+  productList.innerHTML = "<p>No products available yet.</p>";
+  return;
 }
+renderProducts(allProducts);
 
-function renderProducts(productsToShow) {
   const productList = document.getElementById("products");
   if (!productList) return;
 
@@ -123,7 +63,7 @@ function renderProducts(productsToShow) {
       if (!product) return;
 
       window.addToCart(
-        Number(product.id),
+        product.id,
         product.name,
         Number(product.price)
       );
