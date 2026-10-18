@@ -24,12 +24,15 @@ async function loadProducts() {
 
   allProducts = data || [];
 
-if (allProducts.length === 0) {
-  productList.innerHTML = "<p>No products available yet.</p>";
-  return;
-}
-renderProducts(allProducts);
+  if (allProducts.length === 0) {
+    productList.innerHTML = "<p>No products available yet.</p>";
+    return;
+  }
 
+  renderProducts(allProducts);
+}
+
+function renderProducts(productsToShow) {
   const productList = document.getElementById("products");
   if (!productList) return;
 
@@ -47,10 +50,16 @@ renderProducts(allProducts);
           style="width:100%;max-width:300px;height:250px;object-fit:contain;"
         >
       ` : ""}
+
       <h3>${product.name}</h3>
       <p>${product.description || ""}</p>
       <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
-      <button type="button" class="add-to-cart" data-index="${index}">
+
+      <button
+        type="button"
+        class="add-to-cart"
+        data-index="${index}"
+      >
         Add to Cart
       </button>
     </article>
