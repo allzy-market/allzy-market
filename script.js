@@ -564,12 +564,12 @@ async function loadAdminOrders() {
   }
 
   const allowedStatuses = [
-    "pending",
-    "processing",
-    "shipped",
-    "delivered",
-    "cancelled"
-  ];
+  "pending",
+  "confirmed",
+  "shipped",
+  "delivered",
+  "cancelled"
+];
 
   adminOrdersList.innerHTML = orders.map(order => {
     const orderItems = (items || []).filter(
