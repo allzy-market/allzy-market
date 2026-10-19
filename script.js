@@ -522,3 +522,206 @@ if (sellerLogoutButton) {
 if (sellerLoginForm) {
   updateSellerLoginStatus();
 }
+
+// Allzy Market Admin Dashboard
+const adminLoginForm = document.getElementById("admin-login-form");
+const adminMessage = document.getElementById("admin-message");
+const adminOrdersSection = document.getElementById("admin-orders-section");
+const adminOrdersList = document.getElementById("admin-orders-list");
+const adminRefreshButton = document.getElementById("admin-refresh-orders");
+const adminLogoutButton = document.getElementById("admin-logout-button");
+
+async function loadAdminOrders() {
+  adminMessage.textContent = "Loading customer orders...";
+  adminOrdersList.innerHTML = "";
+
+  const { data: orders, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Admin orders error:", error);
+    adminMessage.textContent =
+      "Could not load orders. Check your admin permissions.";
+    return;
+  }
+
+  const { data: items, error: itemsError } = await supabaseClient
+    .from("order_items")
+    .select("*");
+
+  if (itemsError) {
+    console.error("Admin order items error:", itemsError);
+    adminMessage.textContent = "Orders loaded, but order items could not be loaded.";
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    adminOrdersList.innerHTML = "<p>No customer orders found.</p>";
+    adminMessage.textContent = "Admin access verified.";
+    return;
+  }
+
+  const allowedStatuses = [
+    "pending",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled"
+  ];
+
+  adminOrdersList.innerHTML = orders.map(order => {
+    const orderItems = (items || []).filter(
+      item => String(item.order_id) === String(order.id)
+    );
+
+    const itemHtml = orderItems.length
+      ? orderItems.map(item => `
+          <li>
+            ${item.product_name || "Product"} —
+            Quantity: ${Number(item.quantity)} —
+            ₦${Number(item.unit_price).toLocaleString("en-NG")}
+          </li>
+        `).join("")
+      : "<li>No order items found.</li>";
+
+    const statusOptions = allowedStatuses.map(status => `
+      <option value="${status}" ${
+        order.status === status ? "selected" : ""
+      }>${status}</option>
+    `).join("");
+
+    return `
+      <article class="cart-section">
+        <h4>Order #${order.id}</h4>
+        <p><strong>Customer:</strong> ${escapeAdminText(order.customer_name)}</p>
+        <p><strong>Phone:</strong> ${escapeAdminText(order.customer_phone)}</p>
+        <p><strong>Address:</strong> ${escapeAdminText(order.delivery_address)},
+          ${escapeAdminText(order.delivery_city)},
+          ${escapeAdminText(order.delivery_state)}</p>
+        <p><strong>Total:</strong> ₦${Number(order.total_amount).toLocaleString("en-NG")}</p>
+        <p><strong>Date:</strong> ${escapeAdminText(order.created_at)}</p>
+        <p><strong>Items:</strong></p>
+        <ul>${itemHtml}</ul>
+        <label for="admin-status-${order.id}">Order status</label>
+        <select id="admin-status-${order.id}" class="admin-order-status">
+          ${statusOptions}
+        </select>
+        <button type="button" data-order-id="${order.id}" class="admin-save-status">
+          Save Status
+        </button>
+      </article>
+    `;
+  }).join("");
+
+  adminOrdersList.querySelectorAll(".admin-save-status").forEach(button => {
+    button.addEventListener("click", async function() {
+      const orderId = Number(this.dataset.orderId);
+      const statusSelect = document.getElementById(`admin-status-${orderId}`);
+      const newStatus = statusSelect.value;
+
+      this.disabled = true;
+      this.textContent = "Saving...";
+
+      try {
+        const { data, error } = await supabaseClient.rpc(
+          "admin_update_order_status",
+          {
+            p_order_id: orderId,
+            p_new_status: newStatus
+          }
+        );
+
+        if (error) throw error;
+
+        if (data !== true) {
+          throw new Error("Order was not updated. Check the order number.");
+        }
+
+        adminMessage.textContent = `Order #${orderId} updated to ${newStatus}.`;
+      } catch (error) {
+        console.error("Order status update failed:", error);
+        adminMessage.textContent =
+          "Could not update order status. Please check your admin access.";
+      } finally {
+        this.disabled = false;
+        this.textContent = "Save Status";
+      }
+    });
+  });
+
+  adminMessage.textContent = `Admin access verified. ${orders.length} order(s) found.`;
+}
+
+function escapeAdminText(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("admin-email").value.trim();
+    const password = document.getElementById("admin-password").value;
+    const submitButton = adminLoginForm.querySelector('button[type="submit"]');
+
+    submitButton.disabled = true;
+    adminMessage.textContent = "Signing in...";
+
+    try {
+      const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (loginError) throw loginError;
+
+      const { data: isAdmin, error: adminError } =
+        await supabaseClient.rpc("is_marketplace_admin");
+
+      if (adminError) throw adminError;
+
+      if (isAdmin !== true) {
+        await supabaseClient.auth.signOut();
+        throw new Error("This account is not authorized as an administrator.");
+      }
+
+      adminLoginForm.hidden = true;
+      adminOrdersSection.hidden = false;
+      await loadAdminOrders();
+    } catch (error) {
+      console.error("Admin login failed:", error);
+      adminMessage.textContent = error.message || "Admin login failed.";
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
+if (adminRefreshButton) {
+  adminRefreshButton.addEventListener("click", loadAdminOrders);
+}
+
+if (adminLogoutButton) {
+  adminLogoutButton.addEventListener("click", async function() {
+    const { error } = await supabaseClient.auth.signOut();
+
+    if (error) {
+      adminMessage.textContent = "Could not log out. Please try again.";
+      return;
+    }
+
+    adminLoginForm.hidden = false;
+    adminLoginForm.reset();
+    adminOrdersSection.hidden = true;
+    adminOrdersList.innerHTML = "";
+    adminMessage.textContent = "You have logged out.";
+  });
+}
