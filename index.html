@@ -184,6 +184,45 @@
 
   <p id="seller-login-message" role="status"></p>
 </section>
+      <section id="admin-dashboard" class="cart-section">
+      <h2>Allzy Market Admin Dashboard</h2>
+      <p>Authorized administrators only.</p>
+
+      <form id="admin-login-form">
+        <label for="admin-email">Admin Email</label>
+        <input
+          type="email"
+          id="admin-email"
+          required
+          autocomplete="username"
+        >
+
+        <label for="admin-password">Password</label>
+        <input
+          type="password"
+          id="admin-password"
+          required
+          autocomplete="current-password"
+        >
+
+        <button type="submit">Admin Log In</button>
+      </form>
+
+      <p id="admin-message" role="status"></p>
+
+      <div id="admin-orders-section" hidden>
+        <button type="button" id="admin-refresh-orders">
+          Refresh Orders
+        </button>
+
+        <button type="button" id="admin-logout-button">
+          Admin Log Out
+        </button>
+
+        <h3>Customer Orders</h3>
+        <div id="admin-orders-list"></div>
+      </div>
+    </section>
   </main>
 
   <footer>
