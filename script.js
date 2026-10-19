@@ -643,7 +643,7 @@ async function loadAdminOrders() {
       } catch (error) {
         console.error("Order status update failed:", error);
         adminMessage.textContent =
-          "Could not update order status. Please check your admin access.";
+          "Update failed: " + error.message;
       } finally {
         this.disabled = false;
         this.textContent = "Save Status";
