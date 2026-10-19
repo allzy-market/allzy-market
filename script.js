@@ -726,3 +726,84 @@ if (adminLogoutButton) {
     adminMessage.textContent = "You have logged out.";
   });
 }
+
+
+// Allzy Market Seller Approval
+const sellerApplicationsList = document.getElementById("seller-applications-list");
+const sellerApplicationsMessage = document.getElementById("seller-applications-message");
+const refreshSellerApplicationsButton = document.getElementById("refresh-seller-applications");
+
+async function loadSellerApplications() {
+  sellerApplicationsMessage.textContent = "Loading seller applications...";
+  sellerApplicationsList.innerHTML = "";
+
+  const { data: applications, error } = await supabaseClient
+    .from("seller_applications")
+    .select("*")
+    .order("applied_at", { ascending: false });
+
+  if (error) {
+    console.error("Seller applications error:", error);
+    sellerApplicationsMessage.textContent = "Could not load seller applications.";
+    return;
+  }
+
+  if (!applications || applications.length === 0) {
+    sellerApplicationsMessage.textContent = "No seller applications yet.";
+    return;
+  }
+
+  sellerApplicationsList.innerHTML = applications.map(application => `
+    <article class="cart-section">
+      <h3>${escapeAdminText(application.business_name)}</h3>
+      <p>Contact: ${escapeAdminText(application.contact_name)}</p>
+      <p>Phone: ${escapeAdminText(application.phone)}</p>
+      <p>Status: ${escapeAdminText(application.status)}</p>
+      ${
+        application.status === "pending"
+          ? `
+            <button type="button" data-application-id="${application.id}" data-status="approved" class="seller-review-button">Approve</button>
+            <button type="button" data-application-id="${application.id}" data-status="rejected" class="seller-review-button">Reject</button>
+          `
+          : ""
+      }
+    </article>
+  `).join("");
+
+  sellerApplicationsList.querySelectorAll(".seller-review-button").forEach(button => {
+    button.addEventListener("click", async function() {
+      const applicationId = Number(this.dataset.applicationId);
+      const newStatus = this.dataset.status;
+
+      this.disabled = true;
+      sellerApplicationsMessage.textContent = "Saving seller decision...";
+
+      const { data, error } = await supabaseClient.rpc("admin_review_seller", {
+        p_application_id: applicationId,
+        p_new_status: newStatus
+      });
+
+      if (error) {
+        console.error("Seller review error:", error);
+        sellerApplicationsMessage.textContent = "Could not update seller application: " + error.message;
+        this.disabled = false;
+        return;
+      }
+
+      if (data !== true) {
+        sellerApplicationsMessage.textContent = "Application was not updated. It may already have been reviewed.";
+        await loadSellerApplications();
+        return;
+      }
+
+      sellerApplicationsMessage.textContent = "Seller application " + newStatus + " successfully.";
+      await loadSellerApplications();
+    });
+  });
+
+  sellerApplicationsMessage.textContent = applications.length + " seller application(s) found.";
+}
+
+if (refreshSellerApplicationsButton) {
+  refreshSellerApplicationsButton.addEventListener("click", loadSellerApplications);
+}
