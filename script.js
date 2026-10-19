@@ -673,7 +673,8 @@ if (adminLoginForm) {
     const submitButton = adminLoginForm.querySelector('button[type="submit"]');
 
     submitButton.disabled = true;
-    adminMessage.textContent = "Signing in...";
+    adminMessage.textContent = "Signing in... Please wait.";
+alert("Admin login button is working. Connecting to Supabase...");
 
     try {
       const { error: loginError } = await supabaseClient.auth.signInWithPassword({
