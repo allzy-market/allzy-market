@@ -498,7 +498,15 @@ if (sellerLoginForm) {
         password: password
       });
 
-      if (error) throw error;
+            if (error) throw error;
+
+      const { error: applicationError } = await supabaseClient.rpc(
+        "submit_seller_application"
+      );
+
+      if (applicationError) {
+        console.error("Seller application submission error:", applicationError);
+      }
 
       message.textContent = "Login successful. Checking your seller account...";
       await updateSellerLoginStatus();
