@@ -303,11 +303,27 @@ if (sellerForm) {
       if (error) throw error;
 
       if (data.user) {
-        message.textContent = data.session
-          ? "Registration successful! Your seller account is pending approval."
-          : "Registration received! Check your email to confirm your account. Your seller profile will be pending approval.";
-        sellerForm.reset();
-      }
+  if (data.session) {
+    const { error: applicationError } = await supabaseClient.rpc(
+      "submit_seller_application"
+    );
+
+    if (applicationError) {
+      message.textContent =
+        "Account created, but application submission failed: " +
+        applicationError.message +
+        ". Please log in and try again.";
+    } else {
+      message.textContent =
+        "Registration successful! Your seller application has been submitted and is pending approval.";
+    }
+  } else {
+    message.textContent =
+      "Account created! Please check your email to confirm your account. After confirming, log in to submit your seller application.";
+  }
+
+  sellerForm.reset();
+}
     } catch (error) {
       message.textContent = "Registration failed: " + error.message;
     } finally {
