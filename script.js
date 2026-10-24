@@ -439,7 +439,8 @@ const sellerLogoutButton = document.getElementById("seller-logout-button");
 async function updateSellerLoginStatus() {
   const message = document.getElementById("seller-login-message");
   const productSection = document.getElementById("seller-products");
-
+const sellerOrdersSection =
+  document.getElementById("seller-orders-section");
   if (!message || !productSection) return;
 
   try {
