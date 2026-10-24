@@ -887,17 +887,19 @@ async function loadMySellerOrders() {
       return;
     }
 
+ 
     list.innerHTML = data.map(order => `
       <article class="cart-section">
         <h3>Order #${escapeAdminText(order.order_id)}</h3>
         <p><strong>Date:</strong> ${escapeAdminText(order.order_date)}</p>
-        <p><strong>Status:</strong> ${escapeAdminText(order.order_status)}</p>
+        <p><strong>Status:</strong> <span class="order-status status-${String(order.order_status || "").toLowerCase().replace(/[^a-z]/g, "")}">${escapeAdminText(order.order_status)}</span></p>
         <p><strong>Product:</strong> ${escapeAdminText(order.product_name)}</p>
         <p><strong>Quantity:</strong> ${Number(order.quantity)}</p>
         <p><strong>Price per item:</strong> ₦${Number(order.unit_price).toLocaleString("en-NG")}</p>
         <p><strong>Item total:</strong> ₦${(Number(order.unit_price) * Number(order.quantity)).toLocaleString("en-NG")}</p>
       </article>
     `).join("");
+
 
     message.textContent = data.length + " order item(s) found.";
   } catch (error) {
