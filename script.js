@@ -484,6 +484,7 @@ async function updateSellerLoginStatus() {
     console.error("Seller status error:", error);
     message.textContent = "Could not check seller status. Please refresh and try again.";
     productSection.hidden = true;
+    if (sellerOrdersSection) sellerOrdersSection.hidden = true;
   }
 }
 
@@ -543,8 +544,22 @@ if (sellerLogoutButton) {
       message.textContent = "You have logged out.";
       sellerLogoutButton.hidden = true;
 
-      const productSection = document.getElementById("seller-products");
-      if (productSection) productSection.hidden = true;
+      
+const productSection = document.getElementById("seller-products");
+if (productSection) productSection.hidden = true;
+
+const sellerOrdersSection =
+  document.getElementById("seller-orders-section");
+if (sellerOrdersSection) sellerOrdersSection.hidden = true;
+
+const sellerOrdersMessage =
+  document.getElementById("seller-orders-message");
+const sellerOrdersList =
+  document.getElementById("seller-orders-list");
+
+if (sellerOrdersMessage) sellerOrdersMessage.textContent = "";
+if (sellerOrdersList) sellerOrdersList.innerHTML = "";
+
     } catch (error) {
       message.textContent = "Logout failed: " + error.message;
     }
@@ -838,4 +853,64 @@ async function loadSellerApplications() {
 
 if (refreshSellerApplicationsButton) {
   refreshSellerApplicationsButton.addEventListener("click", loadSellerApplications);
+}
+
+
+async function loadMySellerOrders() {
+  const message = document.getElementById("seller-orders-message");
+  const list = document.getElementById("seller-orders-list");
+
+  if (!message || !list) return;
+
+  message.textContent = "Loading your orders...";
+  list.innerHTML = "";
+
+  try {
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError) throw userError;
+
+    if (!userData.user) {
+      throw new Error("Please log in to view your orders.");
+    }
+
+    const { data, error } = await supabaseClient.rpc(
+      "get_my_seller_orders"
+    );
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      message.textContent = "No orders for your products yet.";
+      return;
+    }
+
+    list.innerHTML = data.map(order => `
+      <article class="cart-section">
+        <h3>Order #${escapeAdminText(order.order_id)}</h3>
+        <p><strong>Date:</strong> ${escapeAdminText(order.order_date)}</p>
+        <p><strong>Status:</strong> ${escapeAdminText(order.order_status)}</p>
+        <p><strong>Product:</strong> ${escapeAdminText(order.product_name)}</p>
+        <p><strong>Quantity:</strong> ${Number(order.quantity)}</p>
+        <p><strong>Price per item:</strong> ₦${Number(order.unit_price).toLocaleString("en-NG")}</p>
+        <p><strong>Item total:</strong> ₦${(Number(order.unit_price) * Number(order.quantity)).toLocaleString("en-NG")}</p>
+      </article>
+    `).join("");
+
+    message.textContent = data.length + " order item(s) found.";
+  } catch (error) {
+    console.error("Seller orders error:", error);
+    message.textContent = "Could not load your orders: " + error.message;
+  }
+}
+
+const sellerRefreshOrdersButton =
+  document.getElementById("seller-refresh-orders");
+
+if (sellerRefreshOrdersButton) {
+  sellerRefreshOrdersButton.addEventListener(
+    "click",
+    loadMySellerOrders
+  );
 }
