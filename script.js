@@ -451,6 +451,7 @@ async function updateSellerLoginStatus() {
       message.textContent = "Please log in with your seller account.";
       if (sellerLogoutButton) sellerLogoutButton.hidden = true;
       productSection.hidden = true;
+      if (sellerOrdersSection) sellerOrdersSection.hidden = true;
       return;
     }
 
@@ -466,12 +467,19 @@ async function updateSellerLoginStatus() {
     if (sellerLogoutButton) sellerLogoutButton.hidden = false;
 
     if (seller.status === "approved") {
-      message.textContent = "Welcome, " + seller.store_name + "! Your seller account is approved.";
-      productSection.hidden = false;
-    } else {
-      message.textContent = "Your seller account is pending approval.";
-      productSection.hidden = true;
-    }
+  message.textContent = "Welcome, " + seller.store_name + "! Your seller account is approved.";
+  productSection.hidden = false;
+
+  if (sellerOrdersSection) {
+    sellerOrdersSection.hidden = false;
+    await loadMySellerOrders();
+  }
+} else {
+  message.textContent = "Your seller account is pending approval.";
+  productSection.hidden = true;
+
+  if (sellerOrdersSection) sellerOrdersSection.hidden = true;
+}
   } catch (error) {
     console.error("Seller status error:", error);
     message.textContent = "Could not check seller status. Please refresh and try again.";
