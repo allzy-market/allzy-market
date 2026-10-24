@@ -339,3 +339,8 @@ body {
   background: #f8d7da;
   color: #721c24;
 }
+
+#seller-orders-list .status-delivered {
+  background: #d4edda;
+  color: #155724;
+}
