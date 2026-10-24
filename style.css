@@ -272,3 +272,40 @@ body {
     line-height: 1.5;
   }
 }
+
+
+/* Allzy Market Seller Orders */
+#seller-orders-section {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+
+#seller-orders-section h2 {
+  margin-top: 0;
+}
+
+#seller-orders-list .cart-section {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+
+#seller-orders-list h3 {
+  margin-top: 0;
+}
+
+#seller-orders-list p {
+  margin: 9px 0;
+  line-height: 1.5;
+}
+
+#seller-refresh-orders {
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
