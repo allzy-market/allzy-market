@@ -344,3 +344,29 @@ body {
   background: #d4edda;
   color: #155724;
 }
+
+
+#seller-orders-list .status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+#seller-orders-list .status-confirmed {
+  background: #cce5ff;
+  color: #004085;
+}
+
+#seller-orders-list .status-processing {
+  background: #ffe5b4;
+  color: #854d0e;
+}
+
+#seller-orders-list .status-shipped {
+  background: #e2d9f3;
+  color: #563d7c;
+}
+
+#seller-orders-list .status-cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
