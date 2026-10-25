@@ -892,7 +892,7 @@ async function loadMySellerOrders() {
       <article class="cart-section">
         <h3>Order #${escapeAdminText(order.order_id)}</h3>
         <p><strong>Date:</strong> ${escapeAdminText(order.order_date)}</p>
-        <p><strong>Status:</strong> <span class="order-status status-${String(order.order_status || "").toLowerCase().replace(/[^a-z]/g, "")}">${escapeAdminText(order.order_status)}</span></p>
+        <p><strong>Order Status:</strong> <span class="order-status status-${String(order.order_status || "").toLowerCase().replace(/[^a-z]/g, "")}">${escapeAdminText(order.order_status)}</span></p>
         <p><strong>Product:</strong> ${escapeAdminText(order.product_name)}</p>
         <p><strong>Quantity:</strong> ${Number(order.quantity)}</p>
         <p><strong>Price per item:</strong> ₦${Number(order.unit_price).toLocaleString("en-NG")}</p>
