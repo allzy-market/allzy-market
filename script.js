@@ -891,7 +891,7 @@ async function loadMySellerOrders() {
     list.innerHTML = data.map(order => `
       <article class="cart-section">
         <h3>Order #${escapeAdminText(order.order_id)}</h3>
-        <p><strong>Date:</strong> ${escapeAdminText(order.order_date)}</p>
+        <p><strong>Date:</strong> ${new Date(order.order_date).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</p>
         <p><strong>Order Status:</strong> <span class="order-status status-${String(order.order_status || "").toLowerCase().replace(/[^a-z]/g, "")}">${escapeAdminText(order.order_status)}</span></p>
         <p><strong>Product:</strong> ${escapeAdminText(order.product_name)}</p>
         <p><strong>Quantity:</strong> ${Number(order.quantity)}</p>
