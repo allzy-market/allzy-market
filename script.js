@@ -83,34 +83,60 @@ function renderProducts(productsToShow) {
 const searchInput = document.getElementById("product-search");
 const categorySelect = document.getElementById("product-category");
 
+
 function filterProducts() {
   const searchTerm = searchInput
     ? searchInput.value.toLowerCase().trim()
     : "";
 
   const selectedCategory = categorySelect
-    ? categorySelect.value.toLowerCase()
+    ? categorySelect.value.toLowerCase().trim()
     : "";
 
+  const categoryGroups = {
+    fashion: ["fashion", "clothing", "clothes", "tops", "shirts", "t-shirts"],
+    bags: ["bags", "bag"],
+    shoes: ["shoes", "shoe", "slippers", "footwear", "sandals"],
+    electronics: [
+      "electronics",
+      "power bank",
+      "power banks",
+      "phone accessories",
+      "headphones & audio",
+      "headphones",
+      "audio",
+      "charger",
+      "chargers"
+    ],
+    beauty: ["beauty", "skincare", "makeup", "cosmetics"],
+    kids: ["kids", "children", "childrens", "girls' dresses", "baby"],
+    "home & living": ["home & living", "home", "living", "household"]
+  };
+
   const filteredProducts = allProducts.filter(product => {
+    const name = (product.name || "").toLowerCase();
+    const description = (product.description || "").toLowerCase();
+    const productCategory = (product.category || "").toLowerCase().trim();
+
     const matchesSearch =
-      (product.name || "").toLowerCase().includes(searchTerm) ||
-      (product.description || "").toLowerCase().includes(searchTerm) ||
-      (product.category || "").toLowerCase().includes(searchTerm);
+      name.includes(searchTerm) ||
+      description.includes(searchTerm) ||
+      productCategory.includes(searchTerm);
 
-    const productCategory = (product.category || "").toLowerCase();
+    const allowedCategories = categoryGroups[selectedCategory];
 
-const matchesCategory =
-  !selectedCategory ||
-  productCategory === selectedCategory ||
-  (
-    selectedCategory === "electronics" &&
-    ["power bank", "power banks", "phone accessories",
-     "headphones & audio", "charger", "chargers"].includes(productCategory)
-  );
+    const matchesCategory =
+      !selectedCategory ||
+      productCategory === selectedCategory ||
+      (allowedCategories &&
+        allowedCategories.includes(productCategory));
 
     return matchesSearch && matchesCategory;
   });
+
+  renderProducts(filteredProducts);
+}
+
 
   renderProducts(filteredProducts);
 }
