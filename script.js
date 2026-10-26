@@ -134,11 +134,7 @@ function filterProducts() {
     return matchesSearch && matchesCategory;
   });
 
-  renderProducts(filteredProducts);
-}
-
-
-  renderProducts(filteredProducts);
+    renderProducts(filteredProducts);
 }
 
 if (searchInput) {
