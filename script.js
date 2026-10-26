@@ -103,9 +103,11 @@ function filterProducts() {
 const matchesCategory =
   !selectedCategory ||
   productCategory === selectedCategory ||
-  (selectedCategory === "electronics" &&
+  (
+    selectedCategory === "electronics" &&
     ["power bank", "power banks", "phone accessories",
-     "headphones & audio", "electronics"].includes(productCategory));
+     "headphones & audio", "charger", "chargers"].includes(productCategory)
+  );
 
     return matchesSearch && matchesCategory;
   });
