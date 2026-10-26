@@ -946,3 +946,75 @@ if (sellerRefreshOrdersButton) {
     loadMySellerOrders
   );
 }
+
+
+async function loadSellerInventory() {
+  const message = document.getElementById("seller-inventory-message");
+  const list = document.getElementById("seller-inventory-list");
+  const section = document.getElementById("seller-inventory-section");
+
+  if (!message || !list || !section) return;
+
+  message.textContent = "Loading your products...";
+  list.innerHTML = "";
+
+  try {
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError) throw userError;
+
+    const user = userData.user;
+
+    if (!user) {
+      throw new Error("Please log in as a seller first.");
+    }
+
+    const { data: products, error } = await supabaseClient
+      .from("products")
+      .select("id, name, price, category, description, image_url, is_available")
+      .eq("seller_id", user.id)
+      .order("name");
+
+    if (error) throw error;
+
+    if (!products || products.length === 0) {
+      message.textContent = "You haven't uploaded any products yet.";
+      return;
+    }
+
+    products.forEach(function (product) {
+      const card = document.createElement("div");
+      card.className = "seller-inventory-item";
+
+      const name = document.createElement("h3");
+      name.textContent = product.name;
+
+      const price = document.createElement("p");
+      price.textContent = "Price: ₦" + Number(product.price).toLocaleString();
+
+      const category = document.createElement("p");
+      category.textContent = "Category: " + product.category;
+
+      const status = document.createElement("p");
+      status.textContent = product.is_available
+        ? "Status: Available"
+        : "Status: Unavailable";
+
+      card.append(name, price, category, status);
+      list.appendChild(card);
+    });
+
+    message.textContent = products.length + " product(s) found.";
+  } catch (error) {
+    console.error("Seller inventory error:", error);
+    message.textContent = "Could not load products: " + error.message;
+  }
+}
+
+const inventoryRefreshButton =
+  document.getElementById("refresh-seller-inventory");
+
+if (inventoryRefreshButton) {
+  inventoryRefreshButton.addEventListener("click", loadSellerInventory);
+}
