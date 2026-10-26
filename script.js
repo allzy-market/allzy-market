@@ -98,9 +98,14 @@ function filterProducts() {
       (product.description || "").toLowerCase().includes(searchTerm) ||
       (product.category || "").toLowerCase().includes(searchTerm);
 
-    const matchesCategory =
-      !selectedCategory ||
-      (product.category || "").toLowerCase() === selectedCategory;
+    const productCategory = (product.category || "").toLowerCase();
+
+const matchesCategory =
+  !selectedCategory ||
+  productCategory === selectedCategory ||
+  (selectedCategory === "electronics" &&
+    ["power bank", "power banks", "phone accessories",
+     "headphones & audio", "electronics"].includes(productCategory));
 
     return matchesSearch && matchesCategory;
   });
