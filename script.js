@@ -1087,7 +1087,7 @@ async function toggleSellerProductAvailability(id, isAvailable) {
 
     const { data, error } = await supabaseClient
       .from("products")
-      .update({ is_available: !isAvailable })
+      .update({ is_available: isAvailable })
       .eq("id", id)
       .eq("seller_id", userData.user.id)
       .select("id");
