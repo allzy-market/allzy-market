@@ -1014,6 +1014,9 @@ availabilityButton.type = "button";
 availabilityButton.textContent = product.is_available
   ? "Mark Unavailable"
   : "Mark Available";
+      availabilityButton.addEventListener("click", function () {
+  toggleSellerProductAvailability(product.id, product.is_available);
+});
       const editButton = document.createElement("button");
       editButton.type = "button";
       editButton.textContent = "Edit Product";
@@ -1050,7 +1053,7 @@ availabilityButton.textContent = product.is_available
         );
       });
 
-      card.append(name, price, category, status, editButton);
+      card.append(name, price, category, status, availabilityButton, editButton);
       list.appendChild(card);
 
     });
