@@ -1064,3 +1064,44 @@ const inventoryRefreshButton =
 if (inventoryRefreshButton) {
   inventoryRefreshButton.addEventListener("click", loadSellerInventory);
 }
+
+
+async function saveSellerProductEdit(id, name, price, category, description) {
+  const message = document.getElementById("seller-inventory-message");
+
+  message.textContent = "Saving product changes...";
+
+  try {
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError) throw userError;
+    if (!userData.user) throw new Error("Please log in first.");
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .update({
+        name,
+        price,
+        category,
+        description
+      })
+      .eq("id", id)
+      .eq("seller_id", userData.user.id)
+      .select("id");
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      throw new Error("Product not updated. Please check your seller permissions.");
+    }
+
+    message.textContent = "Product updated successfully!";
+    await loadSellerInventory();
+    await loadProducts();
+
+  } catch (error) {
+    console.error("Product edit error:", error);
+    message.textContent = "Could not update product: " + error.message;
+  }
+}
