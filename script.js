@@ -1009,8 +1009,46 @@ async function loadSellerInventory() {
         ? "Status: Available"
         : "Status: Unavailable";
 
-      card.append(name, price, category, status);
+      
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.textContent = "Edit Product";
+
+      editButton.addEventListener("click", function () {
+        const newName = prompt("Enter product name:", product.name);
+        if (newName === null || !newName.trim()) return;
+
+        const newPrice = prompt("Enter product price:", product.price);
+        if (newPrice === null) return;
+
+        const priceNumber = Number(newPrice);
+
+        if (!Number.isFinite(priceNumber) || priceNumber <= 0) {
+          alert("Please enter a valid price greater than zero.");
+          return;
+        }
+
+        const newCategory = prompt("Enter product category:", product.category);
+        if (newCategory === null || !newCategory.trim()) return;
+
+        const newDescription = prompt(
+          "Enter product description:",
+          product.description || ""
+        );
+        if (newDescription === null) return;
+
+        saveSellerProductEdit(
+          product.id,
+          newName.trim(),
+          priceNumber,
+          newCategory.trim(),
+          newDescription.trim()
+        );
+      });
+
+      card.append(name, price, category, status, editButton);
       list.appendChild(card);
+
     });
 
     message.textContent = products.length + " product(s) found.";
