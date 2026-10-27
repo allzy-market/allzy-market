@@ -513,6 +513,7 @@ const sellerOrdersSection =
 } else {
   message.textContent = "Your seller account is pending approval.";
   productSection.hidden = true;
+  if (inventorySection) inventorySection.hidden = true;
 
   if (sellerOrdersSection) sellerOrdersSection.hidden = true;
 }
