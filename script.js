@@ -1009,7 +1009,11 @@ async function loadSellerInventory() {
         ? "Status: Available"
         : "Status: Unavailable";
 
-      
+      const availabilityButton = document.createElement("button");
+availabilityButton.type = "button";
+availabilityButton.textContent = product.is_available
+  ? "Mark Unavailable"
+  : "Mark Available";
       const editButton = document.createElement("button");
       editButton.type = "button";
       editButton.textContent = "Edit Product";
