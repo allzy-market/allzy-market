@@ -482,6 +482,7 @@ const sellerOrdersSection =
       message.textContent = "Please log in with your seller account.";
       if (sellerLogoutButton) sellerLogoutButton.hidden = true;
       productSection.hidden = true;
+      if (inventorySection) inventorySection.hidden = true;
       if (sellerOrdersSection) sellerOrdersSection.hidden = true;
       return;
     }
