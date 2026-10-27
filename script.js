@@ -501,6 +501,10 @@ const sellerOrdersSection =
     if (seller.status === "approved") {
   message.textContent = "Welcome, " + seller.store_name + "! Your seller account is approved.";
   productSection.hidden = false;
+      if (inventorySection) {
+  inventorySection.hidden = false;
+  await loadSellerInventory();
+}
 
   if (sellerOrdersSection) {
     sellerOrdersSection.hidden = false;
