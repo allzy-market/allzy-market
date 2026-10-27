@@ -1070,6 +1070,41 @@ if (inventoryRefreshButton) {
 }
 
 
+async function toggleSellerProductAvailability(id, isAvailable) {
+  const message = document.getElementById("seller-inventory-message");
+
+  message.textContent = "Updating product availability...";
+
+  try {
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError) throw userError;
+    if (!userData.user) throw new Error("Please log in first.");
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .update({ is_available: !isAvailable })
+      .eq("id", id)
+      .eq("seller_id", userData.user.id)
+      .select("id");
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      throw new Error("Product availability was not updated. Check seller permissions.");
+    }
+
+    message.textContent = "Product availability updated successfully!";
+    await loadSellerInventory();
+    await loadProducts();
+
+  } catch (error) {
+    console.error("Availability update error:", error);
+    message.textContent = "Could not update availability: " + error.message;
+  }
+}
+
 async function saveSellerProductEdit(id, name, price, category, description) {
   const message = document.getElementById("seller-inventory-message");
 
