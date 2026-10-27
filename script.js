@@ -522,6 +522,7 @@ const sellerOrdersSection =
     message.textContent = "Could not check seller status. Please refresh and try again.";
     productSection.hidden = true;
     if (sellerOrdersSection) sellerOrdersSection.hidden = true;
+    if (inventorySection) inventorySection.hidden = true;
   }
 }
 
