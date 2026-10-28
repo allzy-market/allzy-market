@@ -672,16 +672,26 @@ body {
   overflow: hidden;
 }
 
-
-/* Align product information across cards */
-#products .product h3 {
+/* Allzy Market - Align Product Information */
+#products .product .product-title {
   min-height: 2.7em;
+  line-height: 1.35;
+  margin-bottom: 10px;
 }
 
-#products .product p {
+#products .product .product-description {
   min-height: 4.35em;
+  line-height: 1.45;
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
-#products .product button {
-  width: 100%;
+#products .product .product-price {
+  min-height: 1.5em;
+  margin: 8px 0 12px;
+  font-weight: bold;
 }
