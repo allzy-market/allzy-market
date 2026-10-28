@@ -661,3 +661,13 @@ body {
 #products .product button + button {
   margin-top: 6px;
 }
+
+
+/* Allzy Market - Cleaner Product Descriptions */
+#products .product p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
