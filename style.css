@@ -359,3 +359,74 @@ body {
   background: #f8d7da;
   color: #721c24;
 }
+
+
+/* Allzy Market Order Tracking Journey */
+.tracking-journey {
+  margin: 20px 0;
+  padding: 20px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.tracking-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tracking-step {
+  flex: 1;
+  text-align: center;
+  color: #777777;
+  font-size: 13px;
+}
+
+.tracking-step .tracking-icon {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 8px;
+  border: 2px solid #cccccc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.tracking-step.completed {
+  color: #16803c;
+}
+
+.tracking-step.completed .tracking-icon {
+  border-color: #16803c;
+  background: #e8f7ed;
+}
+
+.tracking-step.current {
+  color: #0759b6;
+  font-weight: bold;
+}
+
+.tracking-step.current .tracking-icon {
+  border-color: #0759b6;
+  background: #eaf3ff;
+}
+
+.tracking-status-message {
+  margin-top: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+@media (max-width: 420px) {
+  .tracking-step {
+    font-size: 11px;
+  }
+
+  .tracking-step .tracking-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
