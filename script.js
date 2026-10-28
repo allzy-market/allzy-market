@@ -1280,7 +1280,7 @@ if (trackOrderForm && trackingResult) {
 
                 return `
                   <div class="tracking-step ${completed ? "completed" : ""} ${current ? "current" : ""}">
-                    <div class="tracking-icon">${completed && !current ? "✓" : step.icon}</div>
+                    <div class="tracking-icon">${completed ? "✓" : step.icon}</div>
                     <div>${step.label}</div>
                   </div>
                 `;
