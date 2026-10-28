@@ -671,3 +671,17 @@ body {
   line-clamp: 3;
   overflow: hidden;
 }
+
+
+/* Align product information across cards */
+#products .product h3 {
+  min-height: 2.7em;
+}
+
+#products .product p {
+  min-height: 4.35em;
+}
+
+#products .product button {
+  width: 100%;
+}
