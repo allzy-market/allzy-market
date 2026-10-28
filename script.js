@@ -141,7 +141,7 @@ if (closeDetailsButton) {
 }
 
 const categorySelect = document.getElementById("product-category");
-
+const searchInput = document.getElementById("product-search");
 
 function filterProducts() {
   const searchTerm = searchInput
