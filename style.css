@@ -430,3 +430,42 @@ body {
     height: 28px;
   }
 }
+
+
+/* Allzy Market Order Confirmation */
+.order-confirmation {
+  background: #ffffff;
+  border: 1px solid #d7eadc;
+  border-radius: 14px;
+  padding: 22px 16px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.order-confirmation h2 {
+  color: #16803c;
+  margin-top: 0;
+}
+
+.order-confirmation p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.order-confirmation .order-number {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.order-confirmation button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #16803c;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
