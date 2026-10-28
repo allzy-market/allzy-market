@@ -260,6 +260,19 @@ function removeFromCart(name) {
   cart = cart.filter(item => item.name !== name);
   displayCart();
 }
+window.changeCartQuantity = function(index, change) {
+  const item = cart[index];
+
+  if (!item) return;
+
+  item.quantity += change;
+
+  if (item.quantity < 1) {
+    item.quantity = 1;
+  }
+
+  displayCart();
+};
 
 displayCart();
 
