@@ -1233,7 +1233,7 @@ if (trackOrderForm && trackingResult) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": "YOUR_SUPABASE_PUBLISHABLE_KEY"
+            "apikey": SUPABASE_PUBLISHABLE_KEY
           },
           body: JSON.stringify({ orderId, phone })
         }
