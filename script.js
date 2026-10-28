@@ -1206,3 +1206,57 @@ async function saveSellerProductEdit(id, name, price, category, description) {
     message.textContent = "Could not update product: " + error.message;
   }
 }
+
+// Allzy Market: Customer Order Tracking
+const trackOrderForm = document.getElementById("track-order-form");
+const trackingResult = document.getElementById("tracking-result");
+
+if (trackOrderForm && trackingResult) {
+  trackOrderForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const orderId = document
+      .getElementById("tracking-order-id")
+      .value.trim();
+
+    trackingResult.textContent = "Checking your order...";
+
+    const { data: order, error } = await supabaseClient
+      .from("orders")
+      .select("id, status, created_at")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Order tracking error:", error);
+      trackingResult.textContent =
+        "Unable to check this order right now. Please try again later.";
+      return;
+    }
+
+    if (!order) {
+      trackingResult.textContent =
+        "Order not found. Please check your order number.";
+      return;
+    }
+
+    trackingResult.innerHTML = `
+      <h3>Order #${order.id}</h3>
+      <p><strong>Status:</strong> ${
+        String(order.status || "Pending")
+          .replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+          })[character])
+      }</p>
+      <p><strong>Order Date:</strong> ${
+        order.created_at
+          ? new Date(order.created_at).toLocaleDateString()
+          : "Not available"
+      }</p>
+    `;
+  });
+}
