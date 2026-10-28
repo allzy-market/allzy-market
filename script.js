@@ -336,7 +336,7 @@ const orderNumber = Number(data.order_id);
 const orderTotal = Number(data.total_amount).toLocaleString("en-NG");
 
 const confirmation = document.createElement("div");
-confirmation.className = "cart-section";
+confirmation.className = "order-confirmation";
 confirmation.setAttribute("role", "status");
 
 confirmation.innerHTML = `
