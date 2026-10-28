@@ -622,3 +622,42 @@ body {
     font-size: 14px !important;
   }
 }
+
+
+/* Allzy Market - Consistent Product Card Heights */
+#products .product {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#products .product img {
+  width: 100%;
+  height: 150px !important;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#products .product h3 {
+  font-size: 16px !important;
+  line-height: 1.35;
+  margin: 10px 0;
+}
+
+#products .product p {
+  font-size: 14px !important;
+  line-height: 1.45;
+}
+
+/* Keep product buttons at the bottom */
+#products .product button {
+  margin-top: auto;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+#products .product button + button {
+  margin-top: 6px;
+}
