@@ -331,15 +331,45 @@ if (orderForm) {
         return;
       }
 
-      alert(
-        "Thank you! Your order has been submitted successfully.\n\n" +
-        "Order number: " + data.order_id + "\n" +
-        "Total: ₦" + Number(data.total_amount).toLocaleString("en-NG")
-      );
+      
+const orderNumber = Number(data.order_id);
+const orderTotal = Number(data.total_amount).toLocaleString("en-NG");
 
-      cart = [];
-      displayCart();
-      orderForm.reset();
+const confirmation = document.createElement("div");
+confirmation.className = "cart-section";
+confirmation.setAttribute("role", "status");
+
+confirmation.innerHTML = `
+  <h2>Order Placed Successfully!</h2>
+  <p>Thank you for shopping with Allzy Market.</p>
+  <p><strong>Order Number:</strong> #${orderNumber}</p>
+  <p><strong>Order Total:</strong> ₦${orderTotal}</p>
+  <p>Your order has been received. You can track its progress using your order number and phone number.</p>
+  <button type="button" id="track-new-order">Track My Order</button>
+`;
+
+orderForm.insertAdjacentElement("afterend", confirmation);
+
+document.getElementById("track-new-order").addEventListener("click", function() {
+  const trackingOrderInput = document.getElementById("tracking-order-id");
+  const trackingPhoneInput = document.getElementById("tracking-phone");
+  const trackingForm = document.getElementById("track-order-form");
+
+  if (trackingOrderInput) trackingOrderInput.value = orderNumber;
+  if (trackingPhoneInput) trackingPhoneInput.value = customerPhone;
+
+  if (trackingForm) {
+    trackingForm.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+});
+
+cart = [];
+displayCart();
+orderForm.reset();
+
 
     } catch (error) {
       console.error("Order submission error:", error);
