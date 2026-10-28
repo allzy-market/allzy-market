@@ -57,7 +57,38 @@
 
 </select>
       
-  <div id="products"></div>
+  <section id="order-tracking" class="cart-section">
+
+  <h2>Track Your Order</h2>
+
+  <p>Enter your order number to check your order status.</p>
+
+  <form id="track-order-form">
+
+    <label for="tracking-order-id">Order Number</label>
+
+    <input
+
+      type="number"
+
+      id="tracking-order-id"
+
+      placeholder="Enter your order number"
+
+      min="1"
+
+      required
+
+    >
+
+    <button type="submit">Track Order</button>
+
+  </form>
+
+  <div id="tracking-result" aria-live="polite"></div>
+
+</section>
+    <div id="products"></div>
       <div id="product-details" class="cart-section" hidden>
 
   <button type="button" id="close-product-details">
