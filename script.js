@@ -220,13 +220,19 @@ function displayCart() {
     return;
   }
 
-  cartItems.innerHTML = cart.map(item => `
+  cartItems.innerHTML = cart.map((item, index) => `
     <div class="cart-item">
       <p><strong>${item.name}</strong></p>
-      <p>Quantity: ${item.quantity}</p>
       <p>Price: ₦${item.price.toLocaleString("en-NG")}</p>
+
+      <div class="cart-quantity-controls">
+        <button type="button" onclick="changeCartQuantity(${index}, -1)">−</button>
+        <span>Quantity: ${item.quantity}</span>
+        <button type="button" onclick="changeCartQuantity(${index}, 1)">+</button>
+      </div>
+
       <p>Subtotal: ₦${(item.price * item.quantity).toLocaleString("en-NG")}</p>
-      <button onclick="removeFromCart('${item.name}')">Remove</button>
+      <button type="button" onclick="removeFromCart('${item.name}')">Remove</button>
     </div>
   `).join("");
 
