@@ -52,9 +52,15 @@ function renderProducts(productsToShow) {
         >
       ` : ""}
 
-      <h3>${product.name}</h3>
-      <p>${product.description || ""}</p>
-      <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
+      <h3 class="product-title">${product.name}</h3>
+
+<p class="product-description">
+  ${product.description || ""}
+</p>
+
+<p class="product-price">
+  ₦${Number(product.price).toLocaleString("en-NG")}
+</p>
 
       <button
         type="button"
