@@ -532,3 +532,62 @@ body {
   font-weight: bold;
   margin-top: 16px;
 }
+
+
+/* Allzy Market - Compact Product Cards */
+.product {
+  padding: 14px;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.product img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 180px !important;
+  object-fit: contain;
+  margin: 0 auto 10px;
+}
+
+.product h3 {
+  font-size: 18px;
+  line-height: 1.35;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+
+.product p {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.product button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 10px;
+  margin-top: 8px;
+  font-size: 15px;
+  border-radius: 9px;
+}
+
+@media (max-width: 600px) {
+  #products {
+    gap: 12px;
+  }
+
+  .product img {
+    height: 150px !important;
+  }
+
+  .product h3 {
+    font-size: 16px;
+  }
+
+  .product p {
+    font-size: 14px;
+  }
+}
