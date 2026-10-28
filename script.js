@@ -32,6 +32,7 @@ async function loadProducts() {
   renderProducts(allProducts);
 }
 
+
 function renderProducts(productsToShow) {
   const productList = document.getElementById("products");
   if (!productList) return;
@@ -57,6 +58,14 @@ function renderProducts(productsToShow) {
 
       <button
         type="button"
+        class="view-product-details"
+        data-index="${index}"
+      >
+        View Details
+      </button>
+
+      <button
+        type="button"
         class="add-to-cart"
         data-index="${index}"
       >
@@ -64,6 +73,45 @@ function renderProducts(productsToShow) {
       </button>
     </article>
   `).join("");
+
+  productList.querySelectorAll(".view-product-details").forEach(button => {
+    button.addEventListener("click", function() {
+      const product = productsToShow[Number(this.dataset.index)];
+      const detailsSection = document.getElementById("product-details");
+      const detailsContent = document.getElementById("product-details-content");
+
+      if (!product || !detailsSection || !detailsContent) return;
+
+      detailsContent.innerHTML = `
+        ${product.image_url ? `
+          <img
+            src="${product.image_url}"
+            alt="${product.name}"
+            style="width:100%;max-width:400px;height:300px;object-fit:contain;"
+          >
+        ` : ""}
+
+        <h2>${product.name}</h2>
+        <p>${product.description || "No product description available."}</p>
+        <h3>₦${Number(product.price).toLocaleString("en-NG")}</h3>
+
+        <button type="button" id="details-add-to-cart">
+          Add to Cart
+        </button>
+      `;
+
+      productList.hidden = true;
+      detailsSection.hidden = false;
+
+      document.getElementById("details-add-to-cart").addEventListener("click", function() {
+        window.addToCart(
+          product.id,
+          product.name,
+          Number(product.price)
+        );
+      });
+    });
+  });
 
   productList.querySelectorAll(".add-to-cart").forEach(button => {
     button.addEventListener("click", function() {
@@ -80,7 +128,18 @@ function renderProducts(productsToShow) {
   });
 }
 
-const searchInput = document.getElementById("product-search");
+const closeDetailsButton = document.getElementById("close-product-details");
+
+if (closeDetailsButton) {
+  closeDetailsButton.addEventListener("click", function() {
+    const detailsSection = document.getElementById("product-details");
+    const productList = document.getElementById("products");
+
+    if (detailsSection) detailsSection.hidden = true;
+    if (productList) productList.hidden = false;
+  });
+}
+
 const categorySelect = document.getElementById("product-category");
 
 
