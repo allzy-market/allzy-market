@@ -1208,6 +1208,7 @@ async function saveSellerProductEdit(id, name, price, category, description) {
 }
 
 // Allzy Market: Customer Order Tracking
+
 const trackOrderForm = document.getElementById("track-order-form");
 const trackingResult = document.getElementById("tracking-result");
 
@@ -1219,44 +1220,56 @@ if (trackOrderForm && trackingResult) {
       .getElementById("tracking-order-id")
       .value.trim();
 
+    const phone = document
+      .getElementById("tracking-phone")
+      .value.trim();
+
     trackingResult.textContent = "Checking your order...";
 
-    const { data: order, error } = await supabaseClient
-      .from("orders")
-      .select("id, status, created_at")
-      .eq("id", orderId)
-      .maybeSingle();
+    try {
+      const response = await fetch(
+        "https://xdmuygtrzqznbywvzypl.supabase.co/functions/v1/track-order",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": "YOUR_SUPABASE_PUBLISHABLE_KEY"
+          },
+          body: JSON.stringify({ orderId, phone })
+        }
+      );
 
-    if (error) {
+      const result = await response.json();
+
+      if (!response.ok) {
+        trackingResult.textContent =
+          result.error || "Unable to find your order. Please check your details.";
+        return;
+      }
+
+      const safeStatus = String(result.status || "Pending")
+        .replace(/[&<>"']/g, character => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[character]);
+
+      trackingResult.innerHTML = `
+        <h3>Order #${result.orderId}</h3>
+        <p><strong>Status:</strong> ${safeStatus}</p>
+        <p><strong>Order Date:</strong> ${
+          result.createdAt
+            ? new Date(result.createdAt).toLocaleDateString()
+            : "Not available"
+        }</p>
+      `;
+    } catch (error) {
       console.error("Order tracking error:", error);
       trackingResult.textContent =
-        "Unable to check this order right now. Please try again later.";
-      return;
+        "Unable to check your order right now. Please try again later.";
     }
-
-    if (!order) {
-      trackingResult.textContent =
-        "Order not found. Please check your order number.";
-      return;
-    }
-
-    trackingResult.innerHTML = `
-      <h3>Order #${order.id}</h3>
-      <p><strong>Status:</strong> ${
-        String(order.status || "Pending")
-          .replace(/[&<>"']/g, character => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;"
-          })[character])
-      }</p>
-      <p><strong>Order Date:</strong> ${
-        order.created_at
-          ? new Date(order.created_at).toLocaleDateString()
-          : "Not available"
-      }</p>
-    `;
   });
 }
+
