@@ -1256,15 +1256,50 @@ if (trackOrderForm && trackingResult) {
           "'": "&#39;"
         })[character]);
 
+      
+      const status = String(result.status || "pending").toLowerCase();
+
+      const steps = [
+        { label: "Order Placed", icon: "1", statuses: ["pending", "confirmed", "shipped", "delivered"] },
+        { label: "Confirmed", icon: "2", statuses: ["confirmed", "shipped", "delivered"] },
+        { label: "Shipped", icon: "3", statuses: ["shipped", "delivered"] },
+        { label: "Delivered", icon: "4", statuses: ["delivered"] }
+      ];
+
+      const statusOrder = ["pending", "confirmed", "shipped", "delivered"];
+      const currentIndex = statusOrder.indexOf(status);
+
+      const journey = status === "cancelled"
+        ? `<p class="tracking-status-message">This order has been cancelled.</p>`
+        : `
+          <div class="tracking-journey">
+            <div class="tracking-steps">
+              ${steps.map((step, index) => {
+                const completed = step.statuses.includes(status);
+                const current = index === currentIndex;
+
+                return `
+                  <div class="tracking-step ${completed ? "completed" : ""} ${current ? "current" : ""}">
+                    <div class="tracking-icon">${completed && !current ? "✓" : step.icon}</div>
+                    <div>${step.label}</div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+            <p class="tracking-status-message">Current status: ${safeStatus}</p>
+          </div>
+        `;
+
       trackingResult.innerHTML = `
-        <h3>Order #${result.orderId}</h3>
-        <p><strong>Status:</strong> ${safeStatus}</p>
+        <h3>Order #${Number(result.orderId)}</h3>
+        ${journey}
         <p><strong>Order Date:</strong> ${
           result.createdAt
             ? new Date(result.createdAt).toLocaleDateString()
             : "Not available"
         }</p>
       `;
+
     } catch (error) {
       console.error("Order tracking error:", error);
       trackingResult.textContent =
