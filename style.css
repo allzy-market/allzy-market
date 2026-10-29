@@ -673,11 +673,14 @@ body {
   overflow: hidden;
 }
 
-/* Allzy Market - Align Product Information */
-#products .product .product-title {
+/* Allzy Market - Align Product Information */#products .product .product-title {
+  #products .product .product-title {
   min-height: 2.7em;
-  line-height: 1.35;
-  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #222;
+  margin: 10px 0;
 }
 
 #products .product .product-description {
