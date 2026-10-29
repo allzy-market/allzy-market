@@ -734,3 +734,16 @@ body {
   font-weight: 600;
   cursor: pointer;
 } 
+
+/* Allzy Market - View Details Button */
+#products .product .view-product-details {
+  width: 100%;
+  padding: 11px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}  
