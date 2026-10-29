@@ -699,9 +699,10 @@ body {
 #products .product .product-price {
   min-height: 1.5em;
   margin: 8px 0 12px;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: #087443;
+  line-height: 1.4;
 }
 
 /* Allzy Market - Product Image Polish */
