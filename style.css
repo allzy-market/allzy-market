@@ -98,14 +98,42 @@ footer {
   background: #0f766e;
 }
 
+/* Allzy Market - Mobile Product Card Layout */
 @media (max-width: 480px) {
   #products {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
+    margin-top: 15px;
   }
 
-  .product {
-    padding: 12px;
+  #products .product {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 0;
+  }
+
+  #products .product img {
+    height: 120px !important;
+    padding: 4px;
+  }
+
+  #products .product .product-title {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  #products .product .product-description {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  #products .product .product-price {
+    font-size: 16px;
+  }
+
+  #products .product button {
+    font-size: 12px;
+    padding: 10px 6px;
   }
 }
 
