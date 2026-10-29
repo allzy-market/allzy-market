@@ -81,12 +81,14 @@ function renderProducts(productsToShow) {
 </p>
 
       <button
-        type="button"
-        class="wishlist-button"
-        data-product-id="${product.id}"
-      >
-        ♡ Add to Wishlist
-      </button>
+  type="button"
+  class="wishlist-button"
+  data-product-id="${product.id}"
+>
+  ${wishlist.some(id => String(id) === String(product.id))
+    ? "♥ Saved to Wishlist"
+    : "♡ Add to Wishlist"}
+</button>
 
       <button
         type="button"
