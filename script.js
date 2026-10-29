@@ -152,6 +152,29 @@ function renderProducts(productsToShow) {
   });
 }
 
+  productList.querySelectorAll(".wishlist-button").forEach(button => {
+    button.addEventListener("click", function() {
+      const productId = String(this.dataset.productId);
+      const alreadySaved = wishlist.some(
+        id => String(id) === productId
+      );
+
+      if (alreadySaved) {
+        wishlist = wishlist.filter(
+          id => String(id) !== productId
+        );
+      } else {
+        wishlist.push(productId);
+      }
+
+      localStorage.setItem("allzyWishlist", JSON.stringify(wishlist));
+
+      this.textContent = alreadySaved
+        ? "♡ Add to Wishlist"
+        : "♥ Saved to Wishlist";
+    });
+  });
+
 const closeDetailsButton = document.getElementById("close-product-details");
 
 if (closeDetailsButton) {
