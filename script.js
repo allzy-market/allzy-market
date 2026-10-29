@@ -58,13 +58,23 @@ function renderProducts(productsToShow) {
   ${product.description || ""}
 </p>
 
-<p class="product-price">
+
+      <p class="product-price">
   ₦${Number(product.price).toLocaleString("en-NG")}
 </p>
 
       <button
         type="button"
+        class="wishlist-button"
+        data-product-id="${product.id}"
+      >
+        ♡ Add to Wishlist
+      </button>
+
+      <button
+        type="button"
         class="view-product-details"
+
         data-index="${index}"
       >
         View Details
