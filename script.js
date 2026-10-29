@@ -283,20 +283,6 @@ if (wishlistToggle) {
 
 const wishlistToggle = document.getElementById("wishlist-toggle");
 
-if (wishlistToggle) {
-  wishlistToggle.addEventListener("click", function() {
-    const wishlistSection = document.getElementById("wishlist-section");
-
-    if (!wishlistSection) return;
-
-    wishlistSection.hidden = !wishlistSection.hidden;
-
-    if (!wishlistSection.hidden) {
-      displayWishlist();
-    }
-  });
-}
-
 const closeDetailsButton = document.getElementById("close-product-details");
 
 if (closeDetailsButton) {
