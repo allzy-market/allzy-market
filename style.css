@@ -721,3 +721,16 @@ body {
   border-radius: 8px;
   padding: 6px;
 }
+
+ /* Allzy Market - Wishlist Button */
+#products .product .wishlist-button {
+  width: 100%;
+  padding: 11px;
+  background: #fff0f3;
+  color: #c2185b;
+  border: 1px solid #f3b5c8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+} 
