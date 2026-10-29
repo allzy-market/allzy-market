@@ -12,6 +12,15 @@ try {
   wishlist = [];
 }
 
+
+function updateWishlistCount() {
+  const count = document.getElementById("wishlist-count");
+
+  if (count) {
+    count.textContent = wishlist.length;
+  }
+}
+
 async function loadProducts() {
   const productList = document.getElementById("products");
   if (!productList) return;
