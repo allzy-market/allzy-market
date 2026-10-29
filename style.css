@@ -617,11 +617,17 @@ body {
     margin: 6px 0;
   }
 
-  #products .product button {
-    padding: 10px 8px;
-    margin-top: 6px;
-    font-size: 14px !important;
-  }
+ /* Allzy Market - Add to Cart Button */
+#products .product .add-to-cart {
+  width: 100%;
+  padding: 12px;
+  background: #087443;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 
