@@ -281,8 +281,6 @@ if (wishlistToggle) {
   });
 }
 
-const wishlistToggle = document.getElementById("wishlist-toggle");
-
 const closeDetailsButton = document.getElementById("close-product-details");
 
 if (closeDetailsButton) {
