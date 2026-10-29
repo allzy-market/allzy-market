@@ -107,10 +107,14 @@ footer {
   }
 
   #products .product {
-    padding: 10px;
-    border-radius: 10px;
-    min-width: 0;
-  }
+  padding: 10px;
+  border-radius: 10px;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
   #products .product img {
     height: 120px !important;
