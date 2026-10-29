@@ -3,6 +3,14 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UGRcI_2l6Vpl7QroGTVFiw_J818DtOC
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let allProducts = [];
+let wishlist = [];
+
+try {
+  wishlist = JSON.parse(localStorage.getItem("allzyWishlist") || "[]");
+  if (!Array.isArray(wishlist)) wishlist = [];
+} catch {
+  wishlist = [];
+}
 
 async function loadProducts() {
   const productList = document.getElementById("products");
