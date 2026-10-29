@@ -64,7 +64,7 @@ function renderProducts(productsToShow) {
       ${product.image_url ? `
         <img
           src="${product.image_url}"
-          alt="${product.name}"
+          alt=""
           style="width:100%;max-width:300px;height:250px;object-fit:contain;"
         >
       ` : ""}
