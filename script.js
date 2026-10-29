@@ -147,6 +147,7 @@ if (closeDetailsButton) {
 }
 
 const categorySelect = document.getElementById("product-category");
+const sortSelect = document.getElementById("product-sort");
 const searchInput = document.getElementById("product-search");
 
 function filterProducts() {
@@ -199,18 +200,42 @@ function filterProducts() {
     return matchesSearch && matchesCategory;
   });
 
-    renderProducts(filteredProducts);
+      const sortOption = sortSelect ? sortSelect.value : "recommended";
+
+  const sortedProducts = [...filteredProducts];
+
+  if (sortOption === "price-low-high") {
+    sortedProducts.sort((a, b) => Number(a.price) - Number(b.price));
+  } else if (sortOption === "price-high-low") {
+    sortedProducts.sort((a, b) => Number(b.price) - Number(a.price));
+  } else if (sortOption === "name-a-z") {
+    sortedProducts.sort((a, b) =>
+      (a.name || "").localeCompare(b.name || "")
+    );
+  } else if (sortOption === "newest") {
+    sortedProducts.sort((a, b) =>
+      new Date(b.created_at || 0) - new Date(a.created_at || 0)
+    );
+  }
+
+  renderProducts(sortedProducts);
 }
 
 if (searchInput) {
   searchInput.addEventListener("input", filterProducts);
 }
 
+
 if (categorySelect) {
   categorySelect.addEventListener("change", filterProducts);
 }
 
+if (sortSelect) {
+  sortSelect.addEventListener("change", filterProducts);
+}
+
 loadProducts();
+
 
 let cart = [];
 
