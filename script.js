@@ -189,6 +189,82 @@ function renderProducts(productsToShow) {
   });
 }
 
+function displayWishlist() {
+  const wishlistSection = document.getElementById("wishlist-section");
+  const wishlistProducts = document.getElementById("wishlist-products");
+
+  if (!wishlistSection || !wishlistProducts) return;
+
+  const savedProducts = allProducts.filter(product =>
+    wishlist.some(id => String(id) === String(product.id))
+  );
+
+  if (savedProducts.length === 0) {
+    wishlistProducts.innerHTML = "<p>Your Wishlist is empty.</p>";
+    return;
+  }
+
+  wishlistProducts.innerHTML = savedProducts.map(product => `
+    <article class="product">
+      ${product.image_url ? `
+        <img
+          src="${product.image_url}"
+          alt="${product.name}"
+          style="width:100%;max-width:300px;height:200px;object-fit:contain;"
+        >
+      ` : ""}
+
+      <h3>${product.name}</h3>
+      <p>₦${Number(product.price).toLocaleString("en-NG")}</p>
+
+      <button
+        type="button"
+        class="wishlist-remove-button"
+        data-product-id="${product.id}"
+      >
+        Remove from Wishlist
+      </button>
+
+      <button
+        type="button"
+        class="wishlist-add-to-cart"
+        data-product-id="${product.id}"
+      >
+        Add to Cart
+      </button>
+    </article>
+  `).join("");
+
+  wishlistProducts.querySelectorAll(".wishlist-remove-button").forEach(button => {
+    button.addEventListener("click", function() {
+      const productId = String(this.dataset.productId);
+
+      wishlist = wishlist.filter(id => String(id) !== productId);
+
+      localStorage.setItem("allzyWishlist", JSON.stringify(wishlist));
+      updateWishlistCount();
+      displayWishlist();
+      renderProducts(allProducts);
+    });
+  });
+
+  wishlistProducts.querySelectorAll(".wishlist-add-to-cart").forEach(button => {
+    button.addEventListener("click", function() {
+      const product = savedProducts.find(
+        item => String(item.id) === String(this.dataset.productId)
+      );
+
+      if (!product) return;
+
+      window.addToCart(
+        product.id,
+        product.name,
+        Number(product.price)
+      );
+    });
+  });
+}
+
 const closeDetailsButton = document.getElementById("close-product-details");
 
 if (closeDetailsButton) {
