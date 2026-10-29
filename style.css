@@ -653,7 +653,7 @@ body {
 
 /* Keep product buttons at the bottom */
 #products .product button {
-  margin-top: auto;
+  margin-top: 6px;
   margin-bottom: 6px;
   flex-shrink: 0;
 }
