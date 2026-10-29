@@ -685,7 +685,9 @@ body {
 
 #products .product .product-description {
   min-height: 4.35em;
+  max-height: 4.35em;
   line-height: 1.45;
+  font-size: 14px;
   margin: 0 0 10px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
