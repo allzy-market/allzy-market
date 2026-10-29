@@ -146,6 +146,7 @@ function renderProducts(productsToShow) {
     });
   });
 
+  
   productList.querySelectorAll(".add-to-cart").forEach(button => {
     button.addEventListener("click", function() {
       const product = productsToShow[Number(this.dataset.index)];
@@ -159,11 +160,11 @@ function renderProducts(productsToShow) {
       );
     });
   });
-}
 
   productList.querySelectorAll(".wishlist-button").forEach(button => {
     button.addEventListener("click", function() {
       const productId = String(this.dataset.productId);
+
       const alreadySaved = wishlist.some(
         id => String(id) === productId
       );
@@ -177,12 +178,14 @@ function renderProducts(productsToShow) {
       }
 
       localStorage.setItem("allzyWishlist", JSON.stringify(wishlist));
+      updateWishlistCount();
 
       this.textContent = alreadySaved
         ? "♡ Add to Wishlist"
         : "♥ Saved to Wishlist";
     });
   });
+}
 
 const closeDetailsButton = document.getElementById("close-product-details");
 
