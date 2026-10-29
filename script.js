@@ -20,7 +20,7 @@ function updateWishlistCount() {
     count.textContent = wishlist.length;
   }
 }
-
+updateWishlistCount();
 async function loadProducts() {
   const productList = document.getElementById("products");
   if (!productList) return;
