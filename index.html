@@ -18,7 +18,59 @@
       <p>Discover products from different sellers in one place.</p>
       <p>Shop fashion, bags, shoes and more.</p>
     </section>
+<section id="customer-account" class="cart-section">
 
+  <h2>Customer Account</h2>
+
+  <p>Create an account or log in to manage your orders.</p>
+
+  <form id="customer-signup-form">
+
+    <h3>Create Account</h3>
+
+    <label for="customer-signup-name">Full Name</label>
+
+    <input type="text" id="customer-signup-name" required>
+
+    <label for="customer-signup-email">Email Address</label>
+
+    <input type="email" id="customer-signup-email" required>
+
+    <label for="customer-signup-password">Password</label>
+
+    <input type="password" id="customer-signup-password" minlength="8" required>
+
+    <button type="submit">Create Account</button>
+
+  </form>
+
+  <hr>
+
+  <form id="customer-login-form">
+
+    <h3>Customer Login</h3>
+
+    <label for="customer-login-email">Email Address</label>
+
+    <input type="email" id="customer-login-email" required>
+
+    <label for="customer-login-password">Password</label>
+
+    <input type="password" id="customer-login-password" required>
+
+    <button type="submit">Log In</button>
+
+  </form>
+
+  <button type="button" id="customer-logout-button" hidden>
+
+    Log Out
+
+  </button>
+
+  <p id="customer-account-message" role="status"></p>
+
+</section>
     <section>
   <h2>Explore Products</h2>
 
