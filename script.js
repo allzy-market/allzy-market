@@ -1699,3 +1699,62 @@ if (customerLogoutButton) {
 if (customerSignupForm && customerLoginForm) {
   updateCustomerAccountStatus();
 }
+
+// Allzy Market - Customer Password Reset
+
+const customerResetForm = document.getElementById(
+  "customer-reset-password-form"
+);
+
+// Detect a password recovery link
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    customerResetForm.hidden = false;
+    customerSignupForm.hidden = true;
+    customerLoginForm.hidden = true;
+    customerLogoutButton.hidden = true;
+
+    customerAccountMessage.textContent =
+      "Enter your new password below.";
+  }
+});
+
+// Save the new password
+if (customerResetForm) {
+  customerResetForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const newPassword = document.getElementById(
+      "customer-new-password"
+    ).value;
+
+    customerAccountMessage.textContent =
+      "Updating your password...";
+
+    const button = customerResetForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    button.disabled = true;
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      customerResetForm.reset();
+      customerResetForm.hidden = true;
+
+      customerAccountMessage.textContent =
+        "Your password has been updated successfully.";
+
+    } catch (error) {
+      customerAccountMessage.textContent =
+        "Password update failed: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
