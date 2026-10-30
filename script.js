@@ -1750,6 +1750,8 @@ if (customerForgotPasswordForm) {
 // Detect password recovery
 supabaseClient.auth.onAuthStateChange((event) => {
   if (event === "PASSWORD_RECOVERY") {
+    customerPasswordRecoveryActive = true;
+
     customerSignupForm.hidden = true;
     customerLoginForm.hidden = true;
     customerLogoutButton.hidden = true;
