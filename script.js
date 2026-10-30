@@ -1552,7 +1552,11 @@ const customerAccountMessage =
   document.getElementById("customer-account-message");
 
 async function updateCustomerAccountStatus() {
+  if (customerPasswordRecoveryActive) return;
+
   const { data, error } = await supabaseClient.auth.getUser();
+
+  if (customerPasswordRecoveryActive) return;
 
   if (
   error ||
