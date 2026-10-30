@@ -1553,7 +1553,11 @@ const customerAccountMessage =
 async function updateCustomerAccountStatus() {
   const { data, error } = await supabaseClient.auth.getUser();
 
-  if (error || !data.user) {
+  if (
+  error ||
+  !data.user ||
+  data.user.user_metadata?.account_type !== "customer"
+) {
     customerSignupForm.hidden = false;
     customerLoginForm.hidden = false;
     customerLogoutButton.hidden = true;
