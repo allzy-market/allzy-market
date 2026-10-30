@@ -1758,3 +1758,23 @@ if (customerResetForm) {
     }
   });
 }
+
+<form id="customer-forgot-password-form">
+
+  <h3>Forgot Password?</h3>
+
+  <label for="customer-recovery-email">Email Address</label>
+
+  <input
+
+    type="email"
+
+    id="customer-recovery-email"
+
+    required
+
+  >
+
+  <button type="submit">Send Reset Link</button>
+
+</form>
