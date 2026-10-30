@@ -811,3 +811,9 @@ body {
   background: #ffffff;
   margin: 0 auto 15px;
 } 
+
+/* Allzy Market - Consistent Product Button Heights */
+#products .product button {
+  min-height: 44px;
+  box-sizing: border-box;
+}
