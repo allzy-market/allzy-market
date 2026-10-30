@@ -1535,3 +1535,162 @@ if (trackOrderForm && trackingResult) {
   });
 }
 
+
+// Allzy Market - Customer Registration and Login
+
+const customerSignupForm =
+  document.getElementById("customer-signup-form");
+
+const customerLoginForm =
+  document.getElementById("customer-login-form");
+
+const customerLogoutButton =
+  document.getElementById("customer-logout-button");
+
+const customerAccountMessage =
+  document.getElementById("customer-account-message");
+
+async function updateCustomerAccountStatus() {
+  const { data, error } = await supabaseClient.auth.getUser();
+
+  if (error || !data.user) {
+    customerSignupForm.hidden = false;
+    customerLoginForm.hidden = false;
+    customerLogoutButton.hidden = true;
+    return;
+  }
+
+  const user = data.user;
+
+  customerSignupForm.hidden = true;
+  customerLoginForm.hidden = true;
+  customerLogoutButton.hidden = false;
+
+  const customerName =
+    user.user_metadata?.full_name || user.email;
+
+  customerAccountMessage.textContent =
+    "Welcome, " + customerName + "! You are logged in.";
+}
+
+// Customer registration
+if (customerSignupForm) {
+  customerSignupForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const name =
+      document.getElementById("customer-signup-name").value.trim();
+
+    const email =
+      document.getElementById("customer-signup-email").value.trim();
+
+    const password =
+      document.getElementById("customer-signup-password").value;
+
+    customerAccountMessage.textContent = "Creating your account...";
+
+    const button = customerSignupForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    button.disabled = true;
+
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        customerAccountMessage.textContent =
+          "Account created successfully! Welcome to Allzy Market.";
+
+        customerSignupForm.reset();
+        await updateCustomerAccountStatus();
+      } else {
+        customerAccountMessage.textContent =
+          "Account created! Please check your email to confirm your account before logging in.";
+
+        customerSignupForm.reset();
+      }
+
+    } catch (error) {
+      customerAccountMessage.textContent =
+        "Registration failed: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+// Customer login
+if (customerLoginForm) {
+  customerLoginForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const email =
+      document.getElementById("customer-login-email").value.trim();
+
+    const password =
+      document.getElementById("customer-login-password").value;
+
+    customerAccountMessage.textContent = "Logging in...";
+
+    const button = customerLoginForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    button.disabled = true;
+
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      customerLoginForm.reset();
+
+      await updateCustomerAccountStatus();
+
+    } catch (error) {
+      customerAccountMessage.textContent =
+        "Login failed: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+// Customer logout
+if (customerLogoutButton) {
+  customerLogoutButton.addEventListener("click", async function() {
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) throw error;
+
+      customerAccountMessage.textContent =
+        "You have logged out successfully.";
+
+      await updateCustomerAccountStatus();
+
+    } catch (error) {
+      customerAccountMessage.textContent =
+        "Logout failed: " + error.message;
+    }
+  });
+}
+
+// Check existing customer login
+if (customerSignupForm && customerLoginForm) {
+  updateCustomerAccountStatus();
+}
