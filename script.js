@@ -1601,8 +1601,9 @@ if (customerSignupForm) {
         password,
         options: {
           data: {
-            full_name: name
-          }
+  full_name: name,
+  account_type: "customer"
+}
         }
       });
 
