@@ -1766,7 +1766,10 @@ supabaseClient.auth.onAuthStateChange((event) => {
       "Enter your new password below.";
   }
 });
-
+// Check customer login after recovery listener is ready
+if (customerSignupForm && customerLoginForm) {
+  updateCustomerAccountStatus();
+}
 // Save new password
 if (customerResetForm) {
   customerResetForm.addEventListener("submit", async function(event) {
