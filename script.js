@@ -750,8 +750,9 @@ await loadProducts();
 // Allzy Market seller login and logout
 const sellerLoginForm = document.getElementById("seller-login-form");
 const sellerLogoutButton = document.getElementById("seller-logout-button");
-
+let customerPasswordRecoveryActive = false;
 async function updateSellerLoginStatus() {
+  if (customerPasswordRecoveryActive) return;
   const message = document.getElementById("seller-login-message");
   const productSection = document.getElementById("seller-products");
   const inventorySection = document.getElementById("seller-inventory-section");
