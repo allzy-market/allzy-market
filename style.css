@@ -800,3 +800,13 @@ body {
 #products .product:active {
   transform: scale(0.98);
 }  
+
+ /* Allzy Market - Desktop Product Images */
+#products .product .product-image {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background: #ffffff;
+  margin: 0 auto 15px;
+} 
