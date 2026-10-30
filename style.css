@@ -783,3 +783,19 @@ body {
   font-weight: 600;
   cursor: pointer;
 }  
+
+/* Allzy Market - Product Card Hover and Tap Effects */
+#products .product {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+  #products .product:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.10);
+  }
+}
+
+#products .product:active {
+  transform: scale(0.98);
+}  
