@@ -1567,9 +1567,9 @@ async function updateCustomerAccountStatus() {
     !data.user ||
     data.user.user_metadata?.account_type !== "customer"
   ) {
-    customerSignupForm.hidden = false;
-    customerLoginForm.hidden = false;
-    customerLogoutButton.hidden = true;
+if (customerSignupForm) customerSignupForm.hidden = false;
+if (customerLoginForm) customerLoginForm.hidden = false;
+if (customerLogoutButton) customerLogoutButton.hidden = true;
 
     if (customerDashboard) {
       customerDashboard.hidden = true;
