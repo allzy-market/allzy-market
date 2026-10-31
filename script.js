@@ -1558,16 +1558,48 @@ async function updateCustomerAccountStatus() {
 
   if (customerPasswordRecoveryActive) return;
 
+  const customerDashboard = document.getElementById(
+    "customer-dashboard"
+  );
+
   if (
-  error ||
-  !data.user ||
-  data.user.user_metadata?.account_type !== "customer"
-) {
+    error ||
+    !data.user ||
+    data.user.user_metadata?.account_type !== "customer"
+  ) {
     customerSignupForm.hidden = false;
     customerLoginForm.hidden = false;
     customerLogoutButton.hidden = true;
+
+    if (customerDashboard) {
+      customerDashboard.hidden = true;
+    }
+
     return;
   }
+
+  const user = data.user;
+
+  customerSignupForm.hidden = true;
+  customerLoginForm.hidden = true;
+  customerLogoutButton.hidden = false;
+
+  const customerName =
+    user.user_metadata?.full_name || user.email;
+
+  customerAccountMessage.textContent =
+    "Welcome, " + customerName + "! You are logged in.";
+
+  if (customerDashboard) {
+    customerDashboard.hidden = false;
+
+    document.getElementById("customer-dashboard-name").textContent =
+      "Name: " + customerName;
+
+    document.getElementById("customer-dashboard-email").textContent =
+      "Email: " + user.email;
+  }
+}
 
   const user = data.user;
 
