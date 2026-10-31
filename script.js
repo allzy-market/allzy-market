@@ -1601,19 +1601,6 @@ if (customerLogoutButton) customerLogoutButton.hidden = true;
   }
 }
 
-  const user = data.user;
-
-  customerSignupForm.hidden = true;
-  customerLoginForm.hidden = true;
-  customerLogoutButton.hidden = false;
-
-  const customerName =
-    user.user_metadata?.full_name || user.email;
-
-  customerAccountMessage.textContent =
-    "Welcome, " + customerName + "! You are logged in.";
-}
-
 // Customer registration
 if (customerSignupForm) {
   customerSignupForm.addEventListener("submit", async function(event) {
