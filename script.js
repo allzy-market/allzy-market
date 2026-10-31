@@ -1771,7 +1771,6 @@ if (customerForgotPasswordForm) {
 }
 
 // Detect password recovery
-// Detect password recovery
 supabaseClient.auth.onAuthStateChange((event) => {
   if (event === "PASSWORD_RECOVERY") {
     customerPasswordRecoveryActive = true;
@@ -1822,9 +1821,16 @@ if (customerResetForm) {
       customerResetForm.reset();
       customerResetForm.hidden = true;
 
-      customerAccountMessage.textContent =
-        "Your password has been updated successfully.";
+      customerPasswordRecoveryActive = false;
 
+if (customerForgotPasswordForm) {
+  customerForgotPasswordForm.hidden = false;
+}
+
+customerAccountMessage.textContent =
+  "Your password has been updated successfully.";
+
+      await updateCustomerAccountStatus();
     } catch (error) {
       customerAccountMessage.textContent =
         "Password update failed: " + error.message;
