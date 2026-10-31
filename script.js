@@ -1752,18 +1752,24 @@ if (customerForgotPasswordForm) {
 }
 
 // Detect password recovery
+// Detect password recovery
 supabaseClient.auth.onAuthStateChange((event) => {
   if (event === "PASSWORD_RECOVERY") {
     customerPasswordRecoveryActive = true;
 
-    customerSignupForm.hidden = true;
-    customerLoginForm.hidden = true;
-    customerLogoutButton.hidden = true;
-    customerForgotPasswordForm.hidden = true;
-    customerResetForm.hidden = false;
+    if (customerSignupForm) customerSignupForm.hidden = true;
+    if (customerLoginForm) customerLoginForm.hidden = true;
+    if (customerLogoutButton) customerLogoutButton.hidden = true;
+    if (customerForgotPasswordForm) customerForgotPasswordForm.hidden = true;
 
-    customerAccountMessage.textContent =
-      "Enter your new password below.";
+    if (customerResetForm) {
+      customerResetForm.hidden = false;
+    }
+
+    if (customerAccountMessage) {
+      customerAccountMessage.textContent =
+        "Enter your new password below.";
+    }
   }
 });
 
