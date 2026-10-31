@@ -817,3 +817,7 @@ body {
   min-height: 44px;
   box-sizing: border-box;
 }
+
+[hidden] {
+  display: none !important;
+}  
