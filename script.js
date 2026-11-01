@@ -1476,13 +1476,13 @@ async function loadSellerApplications() {
 
   container.innerHTML = data.map(application => `
     <div class="cart-section">
-      <h3>${escapeHTML(application.store_name || "Seller Application")}</h3>
+      <h3>${escapeHTML(application.business_name || "Seller Application")}</h3>
 
-      <p>Email: ${escapeHTML(application.email || "")}</p>
+      <p>Email: ${escapeHTML(application.email || "Not provided")}</p>
 
-      <p>Phone: ${escapeHTML(application.phone || "")}</p>
+      <p>Phone: ${escapeHTML(application.phone || "Not provided")}</p>
 
-      <p>Address: ${escapeHTML(application.address || "")}</p>
+      <p>Address: ${escapeHTML(application.business_address || "Not provided")}</p>
 
       <p>Status: ${escapeHTML(application.status || "pending")}</p>
 
