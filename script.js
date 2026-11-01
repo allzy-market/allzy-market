@@ -583,6 +583,7 @@ async function submitCustomerOrder(event) {
    ORDER TRACKING
 ========================================= */
 
+
 async function trackOrder(event) {
   event.preventDefault();
 
@@ -591,7 +592,8 @@ async function trackOrder(event) {
   const result = getElement("tracking-result");
 
   if (!orderId || !phone) {
-    result.textContent = "Please enter your order number and phone number.";
+    result.textContent =
+      "Please enter your order number and phone number.";
     return;
   }
 
@@ -616,12 +618,10 @@ async function trackOrder(event) {
     const data = await response.json();
 
     if (!response.ok || data.error || data.success === false) {
-      throw new Error(data.message || data.error || "Order not found.");
+      throw new Error(
+        data.message || data.error || "Order not found."
+      );
     }
-
-    const status = String(
-      data.status || data.order_status || "pending"
-    ).toLowerCase();
 
     const steps = [
       "pending",
@@ -630,48 +630,114 @@ async function trackOrder(event) {
       "delivered"
     ];
 
-    const currentIndex = steps.indexOf(status);
+    function createJourney(status) {
+      status = String(status || "pending").toLowerCase();
 
-    const journey = steps.map((step, index) => {
-      let className = "";
+      const currentIndex = steps.indexOf(status);
 
-      if (status === "cancelled") {
-        className = "";
-      } else if (index < currentIndex) {
-        className = "completed";
-      } else if (index === currentIndex) {
-        className = "current";
-      }
+      return steps.map((step, index) => {
+        let className = "";
 
-      return `
-        <div class="tracking-step ${className}">
-          <div class="tracking-icon">${index + 1}</div>
-          <span>${step.charAt(0).toUpperCase() + step.slice(1)}</span>
-        </div>
-      `;
-    }).join("");
+        if (status !== "cancelled") {
+          if (index < currentIndex) {
+            className = "completed";
+          } else if (index === currentIndex) {
+            className = "current";
+          }
+        }
+
+        return `
+          <div class="tracking-step ${className}">
+            <div class="tracking-icon">${index + 1}</div>
+            <span>${step.charAt(0).toUpperCase() + step.slice(1)}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    const overallStatus = String(
+      data.status || data.order_status || "pending"
+    ).toLowerCase();
+
+    const items = Array.isArray(data.items) ? data.items : [];
+
+    const productTracking = items.length
+      ? items.map(item => {
+          const productName = escapeHTML(
+            item.productName || "Product"
+          );
+
+          const quantity = Number(item.quantity) || 0;
+
+          const productStatus = String(
+            item.status || "pending"
+          ).toLowerCase();
+
+          return `
+            <div class="product-tracking-item">
+              <h4>${productName}</h4>
+
+              <p>Quantity: ${quantity}</p>
+
+              <p>
+                Product Status:
+                <span class="order-status ${getStatusClass(productStatus)}">
+                  ${escapeHTML(productStatus.toUpperCase())}
+                </span>
+              </p>
+
+              <div class="tracking-steps">
+                ${createJourney(productStatus)}
+              </div>
+
+              <p class="tracking-status-message">
+                ${productStatus === "cancelled"
+                  ? "This product has been cancelled."
+                  : "This product is currently " +
+                    escapeHTML(productStatus) + "."}
+              </p>
+            </div>
+          `;
+        }).join("")
+      : "<p>Product tracking details are not available yet.</p>";
 
     result.innerHTML = `
       <div class="tracking-journey">
+
         <h3>Order Status</h3>
+
         <p>Order: ${escapeHTML(orderId)}</p>
-        <p class="order-status ${getStatusClass(status)}">
-          ${escapeHTML(status.toUpperCase())}
+
+        <p class="order-status ${getStatusClass(overallStatus)}">
+          ${escapeHTML(overallStatus.toUpperCase())}
         </p>
-        <div class="tracking-steps">${journey}</div>
+
+        <div class="tracking-steps">
+          ${createJourney(overallStatus)}
+        </div>
+
         <p class="tracking-status-message">
-          ${status === "cancelled"
-            ? "This order has been cancelled."
-            : "Your order is currently " + escapeHTML(status) + "."}
+          Your overall order is currently
+          ${escapeHTML(overallStatus)}.
         </p>
+
+        <hr>
+
+        <h3>Track Your Products</h3>
+
+        ${productTracking}
+
       </div>
     `;
 
   } catch (error) {
     console.error("Tracking error:", error);
-    result.textContent = error.message || "Unable to track this order.";
+
+    result.textContent =
+      error.message || "Unable to track this order.";
   }
 }
+
 
 /* =========================================
    CUSTOMER SIGNUP
