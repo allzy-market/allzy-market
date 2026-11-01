@@ -1227,7 +1227,6 @@ async function toggleProductAvailability(productId, available) {
    SELLER ORDERS
 ========================================= */
 
-
 async function loadSellerOrders() {
   const container = getElement("seller-orders-list");
   if (!container) return;
@@ -1248,47 +1247,86 @@ async function loadSellerOrders() {
     return;
   }
 
-  container.innerHTML = data.map((order, index) => `
-    <div class="cart-section">
-      <h3>Order #${escapeHTML(order.order_id)}</h3>
+  container.innerHTML = data.map((order, index) => {
+    const currentStatus = String(
+      order.seller_fulfillment_status || "pending"
+    ).toLowerCase();
 
-      <p>Product: ${escapeHTML(order.product_name)}</p>
+    const allowedStatuses = [
+      "confirmed",
+      "shipped",
+      "delivered",
+      "cancelled"
+    ];
 
-      <p>Quantity: ${Number(order.quantity)}</p>
+    return `
+      <div class="cart-section">
+        <h3>Order #${escapeHTML(order.order_id)}</h3>
 
-      <p>Unit Price: ${formatPrice(order.unit_price)}</p>
+        <p>Product: ${escapeHTML(order.product_name)}</p>
 
-      <p>Date: ${escapeHTML(order.order_date || "")}</p>
+        <p>Quantity: ${Number(order.quantity)}</p>
 
-      <p>
-        Status:
-        <span class="order-status ${getStatusClass(order.order_status)}">
-          ${escapeHTML(String(order.order_status || "").toUpperCase())}
-        </span>
-      </p>
+        <p>Unit Price: ${formatPrice(order.unit_price)}</p>
 
-      <button
-        type="button"
-        class="view-customer-details"
-        data-order-index="${index}"
-      >
-        View Customer Details
-      </button>
+        <p>Date: ${escapeHTML(order.order_date || "")}</p>
 
-      <div
-        class="customer-details"
-        id="customer-details-${index}"
-        hidden
-      >
-        <h4>Customer Delivery Details</h4>
-        <p>Name: ${escapeHTML(order.customer_name || "Not provided")}</p>
-        <p>Phone: ${escapeHTML(order.customer_phone || "Not provided")}</p>
-        <p>Address: ${escapeHTML(order.delivery_address || "Not provided")}</p>
-        <p>City: ${escapeHTML(order.delivery_city || "Not provided")}</p>
-        <p>State: ${escapeHTML(order.delivery_state || "Not provided")}</p>
+        <p>
+          Marketplace Order Status:
+          <span class="order-status ${getStatusClass(order.order_status)}">
+            ${escapeHTML(String(order.order_status || "").toUpperCase())}
+          </span>
+        </p>
+
+        <p>
+          Your Fulfilment Status:
+          <span class="order-status ${getStatusClass(currentStatus)}">
+            ${escapeHTML(currentStatus.toUpperCase())}
+          </span>
+        </p>
+
+        <label for="seller-status-${escapeHTML(order.order_item_id)}">
+          Update Your Fulfilment Status:
+        </label>
+
+        <select id="seller-status-${escapeHTML(order.order_item_id)}">
+          <option value="">Choose new status</option>
+          ${allowedStatuses.map(status => `
+            <option value="${status}">${status.toUpperCase()}</option>
+          `).join("")}
+        </select>
+
+        <button
+          type="button"
+          class="save-seller-order-status"
+          data-order-item-id="${escapeHTML(order.order_item_id)}"
+        >
+          Save Status
+        </button>
+
+        <button
+          type="button"
+          class="view-customer-details"
+          data-order-index="${index}"
+        >
+          View Customer Details
+        </button>
+
+        <div
+          class="customer-details"
+          id="customer-details-${index}"
+          hidden
+        >
+          <h4>Customer Delivery Details</h4>
+          <p>Name: ${escapeHTML(order.customer_name || "Not provided")}</p>
+          <p>Phone: ${escapeHTML(order.customer_phone || "Not provided")}</p>
+          <p>Address: ${escapeHTML(order.delivery_address || "Not provided")}</p>
+          <p>City: ${escapeHTML(order.delivery_city || "Not provided")}</p>
+          <p>State: ${escapeHTML(order.delivery_state || "Not provided")}</p>
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 
   container.querySelectorAll(".view-customer-details").forEach(button => {
     button.addEventListener("click", () => {
@@ -1304,6 +1342,72 @@ async function loadSellerOrders() {
         : "Hide Customer Details";
     });
   });
+
+  container.querySelectorAll(".save-seller-order-status").forEach(button => {
+    button.addEventListener("click", () => {
+      updateMySellerOrderStatus(button.dataset.orderItemId, button);
+    });
+  });
+}
+
+
+/* =========================================
+   UPDATE SELLER ORDER FULFILMENT STATUS
+========================================= */
+
+async function updateMySellerOrderStatus(orderItemId, button) {
+  const select = getElement(`seller-status-${orderItemId}`);
+
+  if (!select) return;
+
+  const newStatus = select.value;
+
+  const allowedStatuses = [
+    "confirmed",
+    "shipped",
+    "delivered",
+    "cancelled"
+  ];
+
+  if (!allowedStatuses.includes(newStatus)) {
+    showMessage(
+      "seller-orders-message",
+      "Please choose a valid fulfilment status.",
+      true
+    );
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  const { data, error } = await supabaseClient.rpc(
+    "update_my_seller_order_status",
+    {
+      p_order_item_id: orderItemId,
+      p_new_status: newStatus
+    }
+  );
+
+  if (error || data !== true) {
+    showMessage(
+      "seller-orders-message",
+      error ? error.message : "Unable to update fulfilment status.",
+      true
+    );
+
+    button.disabled = false;
+    button.textContent = "Save Status";
+    return;
+  }
+
+  showMessage(
+    "seller-orders-message",
+    "Your fulfilment status has been updated successfully.",
+    false
+  );
+
+  await loadSellerOrders();
 }
 
 
