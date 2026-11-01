@@ -816,6 +816,7 @@ async function customerLogin(event) {
    CUSTOMER ACCOUNT DISPLAY
 ========================================= */
 
+
 async function updateCustomerAccountStatus(user = null) {
   if (customerPasswordRecoveryActive) return;
 
@@ -840,8 +841,91 @@ async function updateCustomerAccountStatus(user = null) {
 
   getElement("customer-dashboard-email").textContent =
     user.email || "";
+
+  await loadCustomerOrderHistory();
 }
 
+async function loadCustomerOrderHistory() {
+  const container = getElement("customer-orders-list");
+  if (!container) return;
+
+  showMessage("customer-orders-message", "Loading your orders...");
+  container.innerHTML = "";
+
+  const { data, error } = await supabaseClient.rpc(
+    "get_my_customer_orders"
+  );
+
+  if (error) {
+    console.error("Customer order history error:", error);
+    showMessage(
+      "customer-orders-message",
+      "Unable to load your order history. Please try again.",
+      true
+    );
+    return;
+  }
+
+  const orders = Array.isArray(data) ? data : [];
+
+  if (!orders.length) {
+    showMessage(
+      "customer-orders-message",
+      "You have no orders linked to this account yet."
+    );
+    return;
+  }
+
+  container.innerHTML = orders.map(order => {
+    const orderStatus = String(order.status || "pending").toLowerCase();
+    const items = Array.isArray(order.items) ? order.items : [];
+
+    const itemsHTML = items.length
+      ? items.map(item => {
+          const productStatus = String(item.status || "pending").toLowerCase();
+
+          return `
+            <div class="customer-order-product">
+              <p><strong>${escapeHTML(item.product_name || "Product")}</strong></p>
+              <p>Quantity: ${Number(item.quantity) || 0}</p>
+              <p>Unit price: ${formatPrice(item.unit_price)}</p>
+              <p>
+                Product status:
+                <span class="order-status ${getStatusClass(productStatus)}">
+                  ${escapeHTML(productStatus.toUpperCase())}
+                </span>
+              </p>
+            </div>
+          `;
+        }).join("")
+      : "<p>Product details are not available.</p>";
+
+    const orderDate = order.created_at
+      ? new Date(order.created_at).toLocaleString()
+      : "Not available";
+
+    return `
+      <div class="cart-section customer-order-history-item">
+        <h3>Order #${escapeHTML(order.id)}</h3>
+        <p>Date: ${escapeHTML(orderDate)}</p>
+        <p>
+          Order status:
+          <span class="order-status ${getStatusClass(orderStatus)}">
+            ${escapeHTML(orderStatus.toUpperCase())}
+          </span>
+        </p>
+        <p>Total: ${formatPrice(order.total_amount)}</p>
+        <h4>Products</h4>
+        ${itemsHTML}
+      </div>
+    `;
+  }).join("");
+
+  showMessage(
+    "customer-orders-message",
+    `You have ${orders.length} order${orders.length === 1 ? "" : "s"}.`
+  );
+}
 /* =========================================
    CUSTOMER LOGOUT
 ========================================= */
@@ -1825,7 +1909,9 @@ function initializeMarketplace() {
 
   getElement("customer-logout-button")
     ?.addEventListener("click", customerLogout);
-
+   
+getElement("customer-refresh-orders")
+  ?.addEventListener("click", loadCustomerOrderHistory);
   /* Product search and filters */
 
   getElement("product-search")
