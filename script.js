@@ -1227,6 +1227,7 @@ async function toggleProductAvailability(productId, available) {
    SELLER ORDERS
 ========================================= */
 
+
 async function loadSellerOrders() {
   const container = getElement("seller-orders-list");
   if (!container) return;
@@ -1247,7 +1248,7 @@ async function loadSellerOrders() {
     return;
   }
 
-  container.innerHTML = data.map(order => `
+  container.innerHTML = data.map((order, index) => `
     <div class="cart-section">
       <h3>Order #${escapeHTML(order.order_id)}</h3>
 
@@ -1265,9 +1266,46 @@ async function loadSellerOrders() {
           ${escapeHTML(String(order.order_status || "").toUpperCase())}
         </span>
       </p>
+
+      <button
+        type="button"
+        class="view-customer-details"
+        data-order-index="${index}"
+      >
+        View Customer Details
+      </button>
+
+      <div
+        class="customer-details"
+        id="customer-details-${index}"
+        hidden
+      >
+        <h4>Customer Delivery Details</h4>
+        <p>Name: ${escapeHTML(order.customer_name || "Not provided")}</p>
+        <p>Phone: ${escapeHTML(order.customer_phone || "Not provided")}</p>
+        <p>Address: ${escapeHTML(order.delivery_address || "Not provided")}</p>
+        <p>City: ${escapeHTML(order.delivery_city || "Not provided")}</p>
+        <p>State: ${escapeHTML(order.delivery_state || "Not provided")}</p>
+      </div>
     </div>
   `).join("");
+
+  container.querySelectorAll(".view-customer-details").forEach(button => {
+    button.addEventListener("click", () => {
+      const index = button.dataset.orderIndex;
+      const details = getElement(`customer-details-${index}`);
+
+      if (!details) return;
+
+      details.hidden = !details.hidden;
+
+      button.textContent = details.hidden
+        ? "View Customer Details"
+        : "Hide Customer Details";
+    });
+  });
 }
+
 
 /* =========================================
    ADMIN LOGIN
