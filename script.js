@@ -515,8 +515,11 @@ async function submitCustomerOrder(event) {
   try {
     const { data, error } = await supabaseClient.functions.invoke(
       "submit-order",
-      {
-        body: {
+{
+  headers: {
+    apikey: SUPABASE_PUBLISHABLE_KEY
+  },
+  body: {
           customer_name: customerName,
           customer_phone: customerPhone,
           delivery_address: customerAddress,
