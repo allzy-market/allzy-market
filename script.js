@@ -1500,15 +1500,22 @@ async function editSellerProduct(productId) {
         type="file"
         accept="image/*">
 
-      <button type="button"
-        onclick="saveSellerProduct('${productId}')">
-        Save Changes
-      </button>
+              <button type="button"
+          onclick="editSellerProduct('${id}')">
+          Edit Product
+        </button>
 
-      <button type="button"
-        onclick="closeProductEditor('${productId}')">
-        Cancel
-      </button>
+        <button type="button"
+          onclick="manageProductVariants('${id}')">
+          Manage Variants
+        </button>
+
+        <div id="product-variants-${id}" hidden></div>
+
+        <button type="button"
+          onclick="toggleProductAvailability('${id}', ${!product.is_available})">
+          ${product.is_available ? "Hide Product" : "Make Available"}
+        </button>
 
     </div>
   `;
