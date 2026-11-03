@@ -151,7 +151,6 @@ function renderWishlist() {
   }).join("");
 }
 
-
 /* =========================================
    PRODUCT LOADING
 ========================================= */
@@ -190,7 +189,6 @@ async function loadProducts() {
   renderProducts();
   renderWishlist();
 }
-
 
 /* =========================================
    PRODUCT SEARCH, FILTER AND SORT
@@ -581,7 +579,6 @@ async function submitCustomerOrder(event) {
    ORDER TRACKING
 ========================================= */
 
-
 async function trackOrder(event) {
   event.preventDefault();
 
@@ -736,7 +733,6 @@ async function trackOrder(event) {
   }
 }
 
-
 /* =========================================
    CUSTOMER SIGNUP
 ========================================= */
@@ -813,7 +809,6 @@ async function customerLogin(event) {
 /* =========================================
    CUSTOMER ACCOUNT DISPLAY
 ========================================= */
-
 
 async function updateCustomerAccountStatus(user = null) {
   if (customerPasswordRecoveryActive) return;
@@ -1298,7 +1293,11 @@ async function loadSellerInventory() {
   if (!container) return;
 
   const { data: authData } = await supabaseClient.auth.getUser();
-  if (!authData.user) return;
+
+  if (!authData.user) {
+    container.innerHTML = "<p>Please log in to view your products.</p>";
+    return;
+  }
 
   container.textContent = "Loading your products...";
 
@@ -1314,6 +1313,7 @@ async function loadSellerInventory() {
 
   if (error) {
     showMessage("seller-inventory-message", error.message, true);
+    container.innerHTML = "<p>Unable to load your products.</p>";
     return;
   }
 
@@ -1323,14 +1323,15 @@ async function loadSellerInventory() {
   }
 
   container.innerHTML = data.map(product => {
-    const id = escapeHTML(product.id);
+    const id = escapeHTML(String(product.id));
     const image = safeImageURL(product.image_url);
 
     return `
       <div class="seller-inventory-item">
 
         ${image ? `
-          <img src="${image}"
+          <img
+            src="${image}"
             alt="${escapeHTML(product.name)}"
             style="width:100%;max-width:140px;height:100px;object-fit:contain;">
         ` : ""}
@@ -1338,7 +1339,8 @@ async function loadSellerInventory() {
         <h3>${escapeHTML(product.name)}</h3>
 
         <p>Price: ${formatPrice(product.price)}</p>
-        <p>Category: ${escapeHTML(product.category)}</p>
+
+        <p>Category: ${escapeHTML(product.category || "")}</p>
 
         <p>
           Availability:
@@ -1354,17 +1356,27 @@ async function loadSellerInventory() {
 
         <p>Status: ${escapeHTML(product.status || "active")}</p>
 
-        <button type="button"
+        <button
+          type="button"
           onclick="editSellerProduct('${id}')">
           Edit Product
         </button>
 
-        <button type="button"
+        <button
+          type="button"
+          onclick="manageProductVariants('${id}')">
+          Manage Variants
+        </button>
+
+        <button
+          type="button"
           onclick="toggleProductAvailability('${id}', ${!product.is_available})">
           ${product.is_available ? "Hide Product" : "Make Available"}
         </button>
 
         <div id="edit-product-${id}" hidden></div>
+
+        <div id="product-variants-${id}" hidden></div>
 
       </div>
     `;
@@ -1408,13 +1420,15 @@ async function editSellerProduct(productId) {
       <h3>Edit Product</h3>
 
       <label>Product Name</label>
-      <input id="edit-name-${productId}"
+      <input
+        id="edit-name-${productId}"
         type="text"
-        value="${escapeHTML(product.name)}"
+        value="${escapeHTML(product.name || "")}"
         required>
 
       <label>Price (₦)</label>
-      <input id="edit-price-${productId}"
+      <input
+        id="edit-price-${productId}"
         type="number"
         min="0.01"
         step="0.01"
@@ -1422,24 +1436,28 @@ async function editSellerProduct(productId) {
         required>
 
       <label>Compare-at Price (₦)</label>
-      <input id="edit-compare-${productId}"
+      <input
+        id="edit-compare-${productId}"
         type="number"
         min="0"
         step="0.01"
         value="${product.compare_at_price ?? ""}">
 
       <label>Category</label>
-      <input id="edit-category-${productId}"
+      <input
+        id="edit-category-${productId}"
         type="text"
-        value="${escapeHTML(product.category)}"
+        value="${escapeHTML(product.category || "")}"
         required>
 
       <label>Description</label>
-      <textarea id="edit-description-${productId}"
-        required>${escapeHTML(product.description)}</textarea>
+      <textarea
+        id="edit-description-${productId}"
+        required>${escapeHTML(product.description || "")}</textarea>
 
       <label>SKU</label>
-      <input id="edit-sku-${productId}"
+      <input
+        id="edit-sku-${productId}"
         type="text"
         value="${escapeHTML(product.sku || "")}">
 
@@ -1449,10 +1467,12 @@ async function editSellerProduct(productId) {
           ${product.status === "active" ? "selected" : ""}>
           Active
         </option>
+
         <option value="draft"
           ${product.status === "draft" ? "selected" : ""}>
           Draft
         </option>
+
         <option value="archived"
           ${product.status === "archived" ? "selected" : ""}>
           Archived
@@ -1460,47 +1480,47 @@ async function editSellerProduct(productId) {
       </select>
 
       <label>
-        <input id="edit-available-${productId}"
+        <input
+          id="edit-available-${productId}"
           type="checkbox"
           ${product.is_available ? "checked" : ""}>
         Product is available
       </label>
 
       <label>
-        <input id="edit-track-${productId}"
+        <input
+          id="edit-track-${productId}"
           type="checkbox"
           ${product.track_inventory ? "checked" : ""}>
         Track inventory
       </label>
 
       <label>Stock Quantity</label>
-      <input id="edit-stock-${productId}"
+      <input
+        id="edit-stock-${productId}"
         type="number"
         min="0"
         step="1"
         value="${Number(product.stock_quantity || 0)}">
 
       <label>Replace Main Product Photo</label>
-      <input id="edit-image-${productId}"
+      <input
+        id="edit-image-${productId}"
         type="file"
         accept="image/*">
 
-              <button type="button"
-          onclick="editSellerProduct('${id}')">
-          Edit Product
-        </button>
+      <button
+        id="save-product-${productId}"
+        type="button"
+        onclick="saveSellerProduct('${escapeHTML(String(productId))}')">
+        Save Changes
+      </button>
 
-        <button type="button"
-          onclick="manageProductVariants('${id}')">
-          Manage Variants
-        </button>
-
-        <div id="product-variants-${id}" hidden></div>
-
-        <button type="button"
-          onclick="toggleProductAvailability('${id}', ${!product.is_available})">
-          ${product.is_available ? "Hide Product" : "Make Available"}
-        </button>
+      <button
+        type="button"
+        onclick="closeProductEditor('${escapeHTML(String(productId))}')">
+        Cancel
+      </button>
 
     </div>
   `;
@@ -1509,6 +1529,7 @@ async function editSellerProduct(productId) {
 
 function closeProductEditor(productId) {
   const editor = getElement("edit-product-" + productId);
+
   if (editor) {
     editor.hidden = true;
     editor.innerHTML = "";
@@ -1525,19 +1546,26 @@ async function saveSellerProduct(productId) {
     return;
   }
 
-  const name = getElement("edit-name-" + productId).value.trim();
-  const price = Number(getElement("edit-price-" + productId).value);
-  const compareValue = getElement("edit-compare-" + productId).value;
-  const category = getElement("edit-category-" + productId).value.trim();
-  const description = getElement("edit-description-" + productId).value.trim();
-  const sku = getElement("edit-sku-" + productId).value.trim();
-  const status = getElement("edit-status-" + productId).value;
-  const available = getElement("edit-available-" + productId).checked;
-  const trackInventory = getElement("edit-track-" + productId).checked;
-  const stock = Number(getElement("edit-stock-" + productId).value);
-  const imageFile = getElement("edit-image-" + productId).files[0];
+  const name = getElement("edit-name-" + productId)?.value.trim();
+  const price = Number(getElement("edit-price-" + productId)?.value);
+  const compareValue = getElement("edit-compare-" + productId)?.value;
+  const category = getElement("edit-category-" + productId)?.value.trim();
+  const description = getElement("edit-description-" + productId)?.value.trim();
+  const sku = getElement("edit-sku-" + productId)?.value.trim();
+  const status = getElement("edit-status-" + productId)?.value;
+  const available = getElement("edit-available-" + productId)?.checked;
+  const trackInventory = getElement("edit-track-" + productId)?.checked;
+  const stock = Number(getElement("edit-stock-" + productId)?.value);
+  const imageInput = getElement("edit-image-" + productId);
+  const imageFile = imageInput?.files?.[0];
 
-  if (!name || !category || !description || !Number.isFinite(price) || price <= 0) {
+  if (
+    !name ||
+    !category ||
+    !description ||
+    !Number.isFinite(price) ||
+    price <= 0
+  ) {
     showMessage(
       "seller-inventory-message",
       "Please enter a valid name, category, description, and price.",
@@ -1546,11 +1574,22 @@ async function saveSellerProduct(productId) {
     return;
   }
 
-  if (compareValue !== "" &&
-      (!Number.isFinite(Number(compareValue)) || Number(compareValue) < 0)) {
+  if (
+    compareValue !== "" &&
+    (!Number.isFinite(Number(compareValue)) || Number(compareValue) < 0)
+  ) {
     showMessage(
       "seller-inventory-message",
       "Enter a valid compare-at price.",
+      true
+    );
+    return;
+  }
+
+  if (!["active", "draft", "archived"].includes(status)) {
+    showMessage(
+      "seller-inventory-message",
+      "Choose a valid product status.",
       true
     );
     return;
@@ -1566,8 +1605,10 @@ async function saveSellerProduct(productId) {
   }
 
   if (imageFile) {
-    if (!imageFile.type.startsWith("image/") ||
-        imageFile.size > 5 * 1024 * 1024) {
+    if (
+      !imageFile.type.startsWith("image/") ||
+      imageFile.size > 5 * 1024 * 1024
+    ) {
       showMessage(
         "seller-inventory-message",
         "Choose a valid image no larger than 5MB.",
@@ -1577,14 +1618,14 @@ async function saveSellerProduct(productId) {
     }
   }
 
-  const saveButton = document.querySelector(
-    `#edit-product-${CSS.escape(productId)} button`
-  );
+  const saveButton = getElement("save-product-" + productId);
 
   if (saveButton) {
     saveButton.disabled = true;
     saveButton.textContent = "Saving...";
   }
+
+  let uploadedImagePath = null;
 
   try {
     let imageURL;
@@ -1599,6 +1640,8 @@ async function saveSellerProduct(productId) {
 
       if (uploadError) throw uploadError;
 
+      uploadedImagePath = imagePath;
+
       const { data: publicData } = supabaseClient.storage
         .from("product-images")
         .getPublicUrl(imagePath);
@@ -1609,7 +1652,8 @@ async function saveSellerProduct(productId) {
     const updates = {
       name,
       price,
-      compare_at_price: compareValue === "" ? null : Number(compareValue),
+      compare_at_price:
+        compareValue === "" ? null : Number(compareValue),
       category,
       description,
       sku: sku || null,
@@ -1643,6 +1687,16 @@ async function saveSellerProduct(productId) {
   } catch (error) {
     console.error("Product update error:", error);
 
+    if (uploadedImagePath) {
+      const { error: cleanupError } = await supabaseClient.storage
+        .from("product-images")
+        .remove([uploadedImagePath]);
+
+      if (cleanupError) {
+        console.error("Uploaded image cleanup error:", cleanupError);
+      }
+    }
+
     showMessage(
       "seller-inventory-message",
       error.message || "Unable to update product.",
@@ -1660,7 +1714,10 @@ async function saveSellerProduct(productId) {
 async function toggleProductAvailability(productId, available) {
   const { data: authData } = await supabaseClient.auth.getUser();
 
-  if (!authData.user) return;
+  if (!authData.user) {
+    showMessage("seller-inventory-message", "Please log in first.", true);
+    return;
+  }
 
   const { error } = await supabaseClient
     .from("products")
@@ -1684,6 +1741,7 @@ async function toggleProductAvailability(productId, available) {
   await loadSellerInventory();
   await loadProducts();
 }
+
 
 /* =========================================
    SELLER PRODUCT VARIANTS
@@ -1786,7 +1844,6 @@ async function manageProductVariants(productId) {
   `;
 }
 
-
 async function addProductVariant(productId) {
   const size = getElement(`variant-size-${productId}`).value.trim();
   const color = getElement(`variant-color-${productId}`).value.trim();
@@ -1846,7 +1903,6 @@ async function addProductVariant(productId) {
 
   await manageProductVariants(productId);
 }
-
 
 async function editProductVariant(productId, variantId) {
   const { data: variant, error } = await supabaseClient
@@ -1911,7 +1967,6 @@ async function editProductVariant(productId, variantId) {
   list.prepend(editor);
 }
 
-
 async function saveProductVariant(productId, variantId) {
   const size = getElement(`edit-variant-size-${variantId}`).value.trim();
   const color = getElement(`edit-variant-color-${variantId}`).value.trim();
@@ -1975,7 +2030,6 @@ async function saveProductVariant(productId, variantId) {
   await manageProductVariants(productId);
 }
 
-
 async function deleteProductVariant(productId, variantId) {
   if (!confirm("Are you sure you want to delete this variant?")) return;
 
@@ -2007,7 +2061,6 @@ async function deleteProductVariant(productId, variantId) {
 
   await manageProductVariants(productId);
 }
-
 
 /* Make functions available to inline HTML buttons */
 window.manageProductVariants = manageProductVariants;
@@ -2142,7 +2195,6 @@ async function loadSellerOrders() {
   });
 }
 
-
 /* =========================================
    UPDATE SELLER ORDER FULFILMENT STATUS
 ========================================= */
@@ -2201,7 +2253,6 @@ async function updateMySellerOrderStatus(orderItemId, button) {
 
   await loadSellerOrders();
 }
-
 
 /* =========================================
    ADMIN LOGIN
