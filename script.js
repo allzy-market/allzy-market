@@ -151,6 +151,7 @@ function renderWishlist() {
   }).join("");
 }
 
+
 /* =========================================
    PRODUCT LOADING
 ========================================= */
@@ -165,22 +166,31 @@ async function loadProducts() {
   const { data, error } = await supabaseClient
     .from("products")
     .select("*")
-    .eq("is_available", true);
+    .eq("is_available", true)
+    .eq("status", "active");
 
   if (error) {
     console.error("Product loading error:", error);
 
     if (container) {
-      container.innerHTML = "<p>Unable to load products. Please try again.</p>";
+      container.innerHTML =
+        "<p>Unable to load products. Please try again.</p>";
     }
     return;
   }
 
-  products = data || [];
+  products = (data || []).filter(product => {
+    // Keep products whose sellers have not enabled stock tracking.
+    if (!product.track_inventory) return true;
+
+    // Hide products with no remaining stock.
+    return Number(product.stock_quantity) > 0;
+  });
 
   renderProducts();
   renderWishlist();
 }
+
 
 /* =========================================
    PRODUCT SEARCH, FILTER AND SORT
