@@ -439,7 +439,6 @@ function renderCart() {
   container.innerHTML = cart.map(item => `
     <div class="cart-item">
       <p><strong>${escapeHTML(item.name)}</strong></p>
-
       <p>Price: ${formatPrice(item.price)}</p>
 
       <div class="cart-quantity-controls">
@@ -471,20 +470,6 @@ function renderCart() {
   );
 
   totalElement.textContent = "Total: " + formatPrice(total);
-}
-
-function checkout() {
-  if (!cart.length) {
-    alert("Your shopping cart is empty.");
-    return;
-  }
-
-  setVisible("checkout-form", true);
-
-  getElement("checkout-form").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
 }
 
 /* =========================================
