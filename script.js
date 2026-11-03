@@ -366,9 +366,32 @@ function viewProductDetails(productId) {
   });
 }
 
+
 /* =========================================
    SHOPPING CART
 ========================================= */
+
+function checkout() {
+  if (!cart.length) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  const checkoutSection = getElement("checkout-form");
+
+  if (!checkoutSection) {
+    alert("Checkout is currently unavailable. Please try again.");
+    return;
+  }
+
+  setVisible("checkout-form", true);
+
+  checkoutSection.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
 
 function addToCart(productId) {
   const product = products.find(item =>
@@ -396,6 +419,7 @@ function addToCart(productId) {
   alert("Product added to your cart.");
 }
 
+
 function changeCartQuantity(productId, change) {
   const item = cart.find(product =>
     String(product.id) === String(productId)
@@ -414,6 +438,7 @@ function changeCartQuantity(productId, change) {
   renderCart();
 }
 
+
 function removeFromCart(productId) {
   cart = cart.filter(item =>
     String(item.id) !== String(productId)
@@ -421,6 +446,7 @@ function removeFromCart(productId) {
 
   renderCart();
 }
+
 
 function renderCart() {
   const container = getElement("cart-items");
@@ -470,6 +496,7 @@ function renderCart() {
   totalElement.textContent = "Total: " + formatPrice(total);
 }
 
+
 /* =========================================
    CUSTOMER CHECKOUT AND ORDER SUBMISSION
 ========================================= */
@@ -482,11 +509,11 @@ async function submitCustomerOrder(event) {
     return;
   }
 
-  const customerName = getElement("customer-name").value.trim();
-  const customerPhone = getElement("customer-phone").value.trim();
-  const customerAddress = getElement("customer-address").value.trim();
-  const customerCity = getElement("customer-city").value.trim();
-  const customerState = getElement("customer-state").value.trim();
+  const customerName = getElement("customer-name")?.value.trim();
+  const customerPhone = getElement("customer-phone")?.value.trim();
+  const customerAddress = getElement("customer-address")?.value.trim();
+  const customerCity = getElement("customer-city")?.value.trim();
+  const customerState = getElement("customer-state")?.value.trim();
 
   if (
     !customerName ||
@@ -499,20 +526,30 @@ async function submitCustomerOrder(event) {
     return;
   }
 
-  const submitButton = getElement("customer-order-form")
-    .querySelector('button[type="submit"]');
+  const customerForm = getElement("customer-order-form");
 
-  submitButton.disabled = true;
-  submitButton.textContent = "Submitting Order...";
+  if (!customerForm) {
+    alert("Checkout form is unavailable.");
+    return;
+  }
+
+  const submitButton = customerForm.querySelector(
+    'button[type="submit"]'
+  );
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting Order...";
+  }
 
   try {
     const { data, error } = await supabaseClient.functions.invoke(
       "submit-order",
-{
-  headers: {
-    apikey: SUPABASE_PUBLISHABLE_KEY
-  },
-  body: {
+      {
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY
+        },
+        body: {
           customer_name: customerName,
           customer_phone: customerPhone,
           delivery_address: customerAddress,
@@ -529,11 +566,27 @@ async function submitCustomerOrder(event) {
     if (error) throw error;
 
     if (!data || !data.success) {
-      throw new Error(data?.message || "Order submission failed.");
+      throw new Error(
+        data?.message || "Order submission failed."
+      );
     }
 
     const orderId = data.order_id;
     const totalAmount = data.total_amount;
+
+    const checkoutSection = getElement("checkout-form");
+
+    if (!checkoutSection) {
+      throw new Error("Order confirmation section is unavailable.");
+    }
+
+    const oldConfirmation = checkoutSection.querySelector(
+      ".order-confirmation"
+    );
+
+    if (oldConfirmation) {
+      oldConfirmation.remove();
+    }
 
     const confirmation = document.createElement("div");
     confirmation.className = "order-confirmation";
@@ -542,38 +595,59 @@ async function submitCustomerOrder(event) {
       <h2>Order Placed Successfully!</h2>
       <p>Thank you for shopping with Allzy Market.</p>
       <p>Your order number is:</p>
-      <p class="order-number">${escapeHTML(orderId)}</p>
+      <p class="order-number">${escapeHTML(String(orderId))}</p>
       <p>Total: ${formatPrice(totalAmount)}</p>
       <button type="button" id="track-new-order">
         Track My Order
       </button>
     `;
 
-    getElement("checkout-form").prepend(confirmation);
+    checkoutSection.prepend(confirmation);
 
     getElement("track-new-order").addEventListener("click", () => {
-      getElement("tracking-order-id").value = orderId;
-      getElement("tracking-phone").value = customerPhone;
+      const orderIdInput = getElement("tracking-order-id");
+      const phoneInput = getElement("tracking-phone");
+      const trackingSection = getElement("order-tracking");
 
-      getElement("order-tracking").scrollIntoView({
-        behavior: "smooth"
-      });
+      if (orderIdInput) orderIdInput.value = orderId;
+      if (phoneInput) phoneInput.value = customerPhone;
+
+      if (trackingSection) {
+        trackingSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
     });
 
     cart = [];
     renderCart();
 
-    getElement("customer-order-form").reset();
-    setVisible("checkout-form", false);
+    customerForm.reset();
+
+    setVisible("checkout-form", true);
+
+    confirmation.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
 
   } catch (error) {
     console.error("Order submission error:", error);
-    alert(error.message || "Unable to place your order. Please try again.");
+
+    alert(
+      error.message ||
+      "Unable to place your order. Please try again."
+    );
+
   } finally {
-    submitButton.disabled = false;
-    submitButton.textContent = "Place Order";
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Place Order";
+    }
   }
 }
+
 
 /* =========================================
    ORDER TRACKING
