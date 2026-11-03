@@ -1693,7 +1693,336 @@ async function toggleProductAvailability(productId, available) {
   await loadProducts();
 }
 
+/* =========================================
+   SELLER PRODUCT VARIANTS
+========================================= */
 
+async function manageProductVariants(productId) {
+  const container = getElement(`product-variants-${productId}`);
+  if (!container) return;
+
+  const { data: authData } = await supabaseClient.auth.getUser();
+  if (!authData.user) {
+    showMessage("seller-inventory-message", "Please log in again.", true);
+    return;
+  }
+
+  container.hidden = false;
+  container.innerHTML = "<p>Loading product variants...</p>";
+
+  const { data: product, error: productError } = await supabaseClient
+    .from("products")
+    .select("id, name, price")
+    .eq("id", productId)
+    .eq("seller_id", authData.user.id)
+    .maybeSingle();
+
+  if (productError || !product) {
+    container.innerHTML = "<p>Unable to load this product.</p>";
+    return;
+  }
+
+  const { data: variants, error } = await supabaseClient
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", productId)
+    .order("id");
+
+  if (error) {
+    container.innerHTML = `<p>${escapeHTML(error.message)}</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <h4>Manage Variants: ${escapeHTML(product.name)}</h4>
+
+    <div class="variant-form">
+      <label>Size</label>
+      <input id="variant-size-${productId}" type="text"
+        placeholder="e.g. Small, Medium, Large">
+
+      <label>Colour</label>
+      <input id="variant-color-${productId}" type="text"
+        placeholder="e.g. Black, Blue, Red">
+
+      <label>Variant SKU (optional)</label>
+      <input id="variant-sku-${productId}" type="text"
+        placeholder="Variant SKU">
+
+      <label>Price override (optional)</label>
+      <input id="variant-price-${productId}" type="number"
+        min="0" step="0.01" placeholder="Leave blank to use ₦${Number(product.price).toLocaleString()}">
+
+      <label>Stock quantity</label>
+      <input id="variant-stock-${productId}" type="number"
+        min="0" step="1" value="0">
+
+      <button type="button"
+        onclick="addProductVariant('${productId}')">
+        Add Variant
+      </button>
+    </div>
+
+    <div id="variant-list-${productId}">
+      ${variants.length ? variants.map(variant => `
+        <div class="variant-item">
+          <p>
+            <strong>${escapeHTML(variant.size || "No size")}</strong>
+            ${variant.color ? ` — ${escapeHTML(variant.color)}` : ""}
+          </p>
+          <p>SKU: ${escapeHTML(variant.sku || "Not set")}</p>
+          <p>Stock: ${Number(variant.stock_quantity)}</p>
+          <p>Price: ${
+            variant.price_override === null
+              ? "Use product price"
+              : "₦" + Number(variant.price_override).toLocaleString()
+          }</p>
+          <p>Status: ${variant.is_available ? "Available" : "Unavailable"}</p>
+
+          <button type="button"
+            onclick="editProductVariant('${productId}', '${variant.id}')">
+            Edit
+          </button>
+
+          <button type="button"
+            onclick="deleteProductVariant('${productId}', '${variant.id}')">
+            Delete
+          </button>
+        </div>
+      `).join("") : "<p>No variants added yet.</p>"}
+    </div>
+  `;
+}
+
+
+async function addProductVariant(productId) {
+  const size = getElement(`variant-size-${productId}`).value.trim();
+  const color = getElement(`variant-color-${productId}`).value.trim();
+  const sku = getElement(`variant-sku-${productId}`).value.trim();
+  const priceValue = getElement(`variant-price-${productId}`).value.trim();
+  const stockValue = getElement(`variant-stock-${productId}`).value;
+
+  if (!size && !color) {
+    alert("Enter a size or colour for this variant.");
+    return;
+  }
+
+  const stock = Number(stockValue);
+  const price = priceValue === "" ? null : Number(priceValue);
+
+  if (!Number.isInteger(stock) || stock < 0) {
+    alert("Enter a valid stock quantity.");
+    return;
+  }
+
+  if (price !== null && (!Number.isFinite(price) || price < 0)) {
+    alert("Enter a valid price.");
+    return;
+  }
+
+  const { data: authData } = await supabaseClient.auth.getUser();
+  if (!authData.user) return;
+
+  const { data: product } = await supabaseClient
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("seller_id", authData.user.id)
+    .maybeSingle();
+
+  if (!product) {
+    alert("You do not have permission to edit this product.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("product_variants")
+    .insert({
+      product_id: productId,
+      size: size || null,
+      color: color || null,
+      sku: sku || null,
+      price_override: price,
+      stock_quantity: stock,
+      is_available: true
+    });
+
+  if (error) {
+    alert("Unable to add variant: " + error.message);
+    return;
+  }
+
+  await manageProductVariants(productId);
+}
+
+
+async function editProductVariant(productId, variantId) {
+  const { data: variant, error } = await supabaseClient
+    .from("product_variants")
+    .select("*")
+    .eq("id", variantId)
+    .eq("product_id", productId)
+    .maybeSingle();
+
+  if (error || !variant) {
+    alert("Unable to load this variant.");
+    return;
+  }
+
+  const editor = document.createElement("div");
+  editor.id = `edit-variant-${variantId}`;
+  editor.className = "variant-edit-form";
+
+  editor.innerHTML = `
+    <label>Size</label>
+    <input id="edit-variant-size-${variantId}" type="text"
+      value="${escapeHTML(variant.size || "")}">
+
+    <label>Colour</label>
+    <input id="edit-variant-color-${variantId}" type="text"
+      value="${escapeHTML(variant.color || "")}">
+
+    <label>SKU</label>
+    <input id="edit-variant-sku-${variantId}" type="text"
+      value="${escapeHTML(variant.sku || "")}">
+
+    <label>Price override</label>
+    <input id="edit-variant-price-${variantId}" type="number"
+      min="0" step="0.01"
+      value="${variant.price_override === null ? "" : Number(variant.price_override)}">
+
+    <label>Stock quantity</label>
+    <input id="edit-variant-stock-${variantId}" type="number"
+      min="0" step="1" value="${Number(variant.stock_quantity)}">
+
+    <label>
+      <input id="edit-variant-available-${variantId}" type="checkbox"
+        ${variant.is_available ? "checked" : ""}>
+      Available for purchase
+    </label>
+
+    <button type="button"
+      onclick="saveProductVariant('${productId}', '${variantId}')">
+      Save Changes
+    </button>
+
+    <button type="button"
+      onclick="manageProductVariants('${productId}')">
+      Cancel
+    </button>
+  `;
+
+  const existing = getElement(`edit-variant-${variantId}`);
+  if (existing) existing.remove();
+
+  const list = getElement(`variant-list-${productId}`);
+  list.prepend(editor);
+}
+
+
+async function saveProductVariant(productId, variantId) {
+  const size = getElement(`edit-variant-size-${variantId}`).value.trim();
+  const color = getElement(`edit-variant-color-${variantId}`).value.trim();
+  const sku = getElement(`edit-variant-sku-${variantId}`).value.trim();
+  const priceValue = getElement(`edit-variant-price-${variantId}`).value.trim();
+  const stockValue = getElement(`edit-variant-stock-${variantId}`).value;
+  const isAvailable = getElement(`edit-variant-available-${variantId}`).checked;
+
+  if (!size && !color) {
+    alert("A variant must have a size or colour.");
+    return;
+  }
+
+  const stock = Number(stockValue);
+  const price = priceValue === "" ? null : Number(priceValue);
+
+  if (!Number.isInteger(stock) || stock < 0) {
+    alert("Enter a valid stock quantity.");
+    return;
+  }
+
+  if (price !== null && (!Number.isFinite(price) || price < 0)) {
+    alert("Enter a valid price.");
+    return;
+  }
+
+  const { data: authData } = await supabaseClient.auth.getUser();
+  if (!authData.user) return;
+
+  const { data: product } = await supabaseClient
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("seller_id", authData.user.id)
+    .maybeSingle();
+
+  if (!product) {
+    alert("You do not have permission to edit this product.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("product_variants")
+    .update({
+      size: size || null,
+      color: color || null,
+      sku: sku || null,
+      price_override: price,
+      stock_quantity: stock,
+      is_available: isAvailable,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", variantId)
+    .eq("product_id", productId);
+
+  if (error) {
+    alert("Unable to update variant: " + error.message);
+    return;
+  }
+
+  await manageProductVariants(productId);
+}
+
+
+async function deleteProductVariant(productId, variantId) {
+  if (!confirm("Are you sure you want to delete this variant?")) return;
+
+  const { data: authData } = await supabaseClient.auth.getUser();
+  if (!authData.user) return;
+
+  const { data: product } = await supabaseClient
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("seller_id", authData.user.id)
+    .maybeSingle();
+
+  if (!product) {
+    alert("You do not have permission to delete this variant.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("product_variants")
+    .delete()
+    .eq("id", variantId)
+    .eq("product_id", productId);
+
+  if (error) {
+    alert("Unable to delete variant: " + error.message);
+    return;
+  }
+
+  await manageProductVariants(productId);
+}
+
+
+/* Make functions available to inline HTML buttons */
+window.manageProductVariants = manageProductVariants;
+window.addProductVariant = addProductVariant;
+window.editProductVariant = editProductVariant;
+window.saveProductVariant = saveProductVariant;
+window.deleteProductVariant = deleteProductVariant;
 /* =========================================
    SELLER ORDERS
 ========================================= */
