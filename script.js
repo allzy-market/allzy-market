@@ -1293,8 +1293,9 @@ async function uploadSellerProduct(event) {
   await loadSellerInventory();
 }
 
+
 /* =========================================
-   SELLER INVENTORY
+   SELLER INVENTORY AND PRODUCT EDITING
 ========================================= */
 
 async function loadSellerInventory() {
@@ -1302,14 +1303,17 @@ async function loadSellerInventory() {
   if (!container) return;
 
   const { data: authData } = await supabaseClient.auth.getUser();
-
   if (!authData.user) return;
 
   container.textContent = "Loading your products...";
 
   const { data, error } = await supabaseClient
     .from("products")
-    .select("id, name, price, category, description, image_url, is_available")
+    .select(`
+      id, name, price, category, description, image_url,
+      is_available, stock_quantity, track_inventory,
+      sku, compare_at_price, status
+    `)
     .eq("seller_id", authData.user.id)
     .order("name");
 
@@ -1329,27 +1333,327 @@ async function loadSellerInventory() {
 
     return `
       <div class="seller-inventory-item">
-        ${image
-          ? `<img src="${image}" alt="${escapeHTML(product.name)}"
-              style="width:100%;max-width:140px;height:100px;object-fit:contain;">`
-          : ""}
+
+        ${image ? `
+          <img src="${image}"
+            alt="${escapeHTML(product.name)}"
+            style="width:100%;max-width:140px;height:100px;object-fit:contain;">
+        ` : ""}
 
         <h3>${escapeHTML(product.name)}</h3>
 
         <p>Price: ${formatPrice(product.price)}</p>
-
         <p>Category: ${escapeHTML(product.category)}</p>
 
-        <p>Status: ${product.is_available ? "Available" : "Unavailable"}</p>
+        <p>
+          Availability:
+          ${product.is_available ? "Available" : "Unavailable"}
+        </p>
+
+        <p>
+          Inventory:
+          ${product.track_inventory
+            ? Number(product.stock_quantity) + " in stock"
+            : "Not tracked"}
+        </p>
+
+        <p>Status: ${escapeHTML(product.status || "active")}</p>
+
+        <button type="button"
+          onclick="editSellerProduct('${id}')">
+          Edit Product
+        </button>
 
         <button type="button"
           onclick="toggleProductAvailability('${id}', ${!product.is_available})">
           ${product.is_available ? "Hide Product" : "Make Available"}
         </button>
+
+        <div id="edit-product-${id}" hidden></div>
+
       </div>
     `;
   }).join("");
 }
+
+
+async function editSellerProduct(productId) {
+  const { data: authData } = await supabaseClient.auth.getUser();
+  const user = authData.user;
+
+  if (!user) {
+    showMessage("seller-inventory-message", "Please log in first.", true);
+    return;
+  }
+
+  const { data: product, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .eq("id", productId)
+    .eq("seller_id", user.id)
+    .single();
+
+  if (error || !product) {
+    showMessage(
+      "seller-inventory-message",
+      error?.message || "Product not found.",
+      true
+    );
+    return;
+  }
+
+  const editor = getElement("edit-product-" + productId);
+  if (!editor) return;
+
+  editor.hidden = false;
+
+  editor.innerHTML = `
+    <div class="product-editor">
+
+      <h3>Edit Product</h3>
+
+      <label>Product Name</label>
+      <input id="edit-name-${productId}"
+        type="text"
+        value="${escapeHTML(product.name)}"
+        required>
+
+      <label>Price (₦)</label>
+      <input id="edit-price-${productId}"
+        type="number"
+        min="0.01"
+        step="0.01"
+        value="${Number(product.price)}"
+        required>
+
+      <label>Compare-at Price (₦)</label>
+      <input id="edit-compare-${productId}"
+        type="number"
+        min="0"
+        step="0.01"
+        value="${product.compare_at_price ?? ""}">
+
+      <label>Category</label>
+      <input id="edit-category-${productId}"
+        type="text"
+        value="${escapeHTML(product.category)}"
+        required>
+
+      <label>Description</label>
+      <textarea id="edit-description-${productId}"
+        required>${escapeHTML(product.description)}</textarea>
+
+      <label>SKU</label>
+      <input id="edit-sku-${productId}"
+        type="text"
+        value="${escapeHTML(product.sku || "")}">
+
+      <label>Product Status</label>
+      <select id="edit-status-${productId}">
+        <option value="active"
+          ${product.status === "active" ? "selected" : ""}>
+          Active
+        </option>
+        <option value="draft"
+          ${product.status === "draft" ? "selected" : ""}>
+          Draft
+        </option>
+        <option value="archived"
+          ${product.status === "archived" ? "selected" : ""}>
+          Archived
+        </option>
+      </select>
+
+      <label>
+        <input id="edit-available-${productId}"
+          type="checkbox"
+          ${product.is_available ? "checked" : ""}>
+        Product is available
+      </label>
+
+      <label>
+        <input id="edit-track-${productId}"
+          type="checkbox"
+          ${product.track_inventory ? "checked" : ""}>
+        Track inventory
+      </label>
+
+      <label>Stock Quantity</label>
+      <input id="edit-stock-${productId}"
+        type="number"
+        min="0"
+        step="1"
+        value="${Number(product.stock_quantity || 0)}">
+
+      <label>Replace Main Product Photo</label>
+      <input id="edit-image-${productId}"
+        type="file"
+        accept="image/*">
+
+      <button type="button"
+        onclick="saveSellerProduct('${productId}')">
+        Save Changes
+      </button>
+
+      <button type="button"
+        onclick="closeProductEditor('${productId}')">
+        Cancel
+      </button>
+
+    </div>
+  `;
+}
+
+
+function closeProductEditor(productId) {
+  const editor = getElement("edit-product-" + productId);
+  if (editor) {
+    editor.hidden = true;
+    editor.innerHTML = "";
+  }
+}
+
+
+async function saveSellerProduct(productId) {
+  const { data: authData } = await supabaseClient.auth.getUser();
+  const user = authData.user;
+
+  if (!user) {
+    showMessage("seller-inventory-message", "Please log in first.", true);
+    return;
+  }
+
+  const name = getElement("edit-name-" + productId).value.trim();
+  const price = Number(getElement("edit-price-" + productId).value);
+  const compareValue = getElement("edit-compare-" + productId).value;
+  const category = getElement("edit-category-" + productId).value.trim();
+  const description = getElement("edit-description-" + productId).value.trim();
+  const sku = getElement("edit-sku-" + productId).value.trim();
+  const status = getElement("edit-status-" + productId).value;
+  const available = getElement("edit-available-" + productId).checked;
+  const trackInventory = getElement("edit-track-" + productId).checked;
+  const stock = Number(getElement("edit-stock-" + productId).value);
+  const imageFile = getElement("edit-image-" + productId).files[0];
+
+  if (!name || !category || !description || !Number.isFinite(price) || price <= 0) {
+    showMessage(
+      "seller-inventory-message",
+      "Please enter a valid name, category, description, and price.",
+      true
+    );
+    return;
+  }
+
+  if (compareValue !== "" &&
+      (!Number.isFinite(Number(compareValue)) || Number(compareValue) < 0)) {
+    showMessage(
+      "seller-inventory-message",
+      "Enter a valid compare-at price.",
+      true
+    );
+    return;
+  }
+
+  if (!Number.isInteger(stock) || stock < 0) {
+    showMessage(
+      "seller-inventory-message",
+      "Stock must be a whole number of zero or more.",
+      true
+    );
+    return;
+  }
+
+  if (imageFile) {
+    if (!imageFile.type.startsWith("image/") ||
+        imageFile.size > 5 * 1024 * 1024) {
+      showMessage(
+        "seller-inventory-message",
+        "Choose a valid image no larger than 5MB.",
+        true
+      );
+      return;
+    }
+  }
+
+  const saveButton = document.querySelector(
+    `#edit-product-${CSS.escape(productId)} button`
+  );
+
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+  }
+
+  try {
+    let imageURL;
+
+    if (imageFile) {
+      const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const imagePath = `${user.id}/${Date.now()}-${safeName}`;
+
+      const { error: uploadError } = await supabaseClient.storage
+        .from("product-images")
+        .upload(imagePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabaseClient.storage
+        .from("product-images")
+        .getPublicUrl(imagePath);
+
+      imageURL = publicData.publicUrl;
+    }
+
+    const updates = {
+      name,
+      price,
+      compare_at_price: compareValue === "" ? null : Number(compareValue),
+      category,
+      description,
+      sku: sku || null,
+      status,
+      is_available: available,
+      track_inventory: trackInventory,
+      stock_quantity: stock,
+      updated_at: new Date().toISOString()
+    };
+
+    if (imageURL) {
+      updates.image_url = imageURL;
+    }
+
+    const { error } = await supabaseClient
+      .from("products")
+      .update(updates)
+      .eq("id", productId)
+      .eq("seller_id", user.id);
+
+    if (error) throw error;
+
+    showMessage(
+      "seller-inventory-message",
+      "Product updated successfully."
+    );
+
+    await loadSellerInventory();
+    await loadProducts();
+
+  } catch (error) {
+    console.error("Product update error:", error);
+
+    showMessage(
+      "seller-inventory-message",
+      error.message || "Unable to update product.",
+      true
+    );
+
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent = "Save Changes";
+    }
+  }
+}
+
 
 async function toggleProductAvailability(productId, available) {
   const { data: authData } = await supabaseClient.auth.getUser();
@@ -1358,7 +1662,10 @@ async function toggleProductAvailability(productId, available) {
 
   const { error } = await supabaseClient
     .from("products")
-    .update({ is_available: available })
+    .update({
+      is_available: available,
+      updated_at: new Date().toISOString()
+    })
     .eq("id", productId)
     .eq("seller_id", authData.user.id);
 
@@ -1375,6 +1682,7 @@ async function toggleProductAvailability(productId, available) {
   await loadSellerInventory();
   await loadProducts();
 }
+
 
 /* =========================================
    SELLER ORDERS
