@@ -491,107 +491,90 @@ function checkout() {
 }
 
 
-function addToCart(productId) {
+async function addToCart(productId, variantId = null) {
   const product = products.find(item =>
     String(item.id) === String(productId)
   );
 
-  if (!product) return;
+  if (!product) {
+    alert("Product not found.");
+    return;
+  }
 
-  const existing = cart.find(item =>
-    String(item.id) === String(product.id)
-  );
+  let variants = [];
+
+  try {
+    variants = await loadProductVariants(product.id);
+  } catch (error) {
+    alert("Unable to check product options. Please try again.");
+    return;
+  }
+
+  let selectedVariant = null;
+
+  if (variants.length > 0) {
+    if (!variantId) {
+      alert("Please select a size or colour in View Details first.");
+      await viewProductDetails(product.id);
+      return;
+    }
+
+    selectedVariant = variants.find(variant =>
+      String(variant.id) === String(variantId)
+    );
+
+    if (!selectedVariant) {
+      alert("Please select a valid product option.");
+      return;
+    }
+
+    if (Number(selectedVariant.stock_quantity) <= 0) {
+      alert("Sorry, this option is out of stock.");
+      return;
+    }
+  }
+
+  const price =
+    selectedVariant?.price_override !== null &&
+    selectedVariant?.price_override !== undefined
+      ? Number(selectedVariant.price_override)
+      : Number(product.price);
+
+  const cartKey = selectedVariant
+    ? `${product.id}::${selectedVariant.id}`
+    : `${product.id}::none`;
+
+  const existing = cart.find(item => item.cartKey === cartKey);
 
   if (existing) {
+    if (
+      selectedVariant &&
+      existing.quantity >= Number(selectedVariant.stock_quantity)
+    ) {
+      alert("You have reached the available stock for this option.");
+      return;
+    }
+
     existing.quantity++;
   } else {
     cart.push({
       id: product.id,
+      product_id: product.id,
+      variant_id: selectedVariant?.id || null,
+      cartKey,
       name: product.name,
-      price: Number(product.price),
+      size: selectedVariant?.size || null,
+      color: selectedVariant?.color || null,
+      price,
+      stock_quantity: selectedVariant
+        ? Number(selectedVariant.stock_quantity)
+        : null,
       quantity: 1
     });
   }
 
   renderCart();
   alert("Product added to your cart.");
-}
-
-
-function changeCartQuantity(productId, change) {
-  const item = cart.find(product =>
-    String(product.id) === String(productId)
-  );
-
-  if (!item) return;
-
-  item.quantity += Number(change);
-
-  if (item.quantity <= 0) {
-    cart = cart.filter(product =>
-      String(product.id) !== String(productId)
-    );
-  }
-
-  renderCart();
-}
-
-
-function removeFromCart(productId) {
-  cart = cart.filter(item =>
-    String(item.id) !== String(productId)
-  );
-
-  renderCart();
-}
-
-
-function renderCart() {
-  const container = getElement("cart-items");
-  const totalElement = getElement("cart-total");
-
-  if (!container || !totalElement) return;
-
-  if (!cart.length) {
-    container.innerHTML = "<p>Your cart is empty.</p>";
-    totalElement.textContent = "Total: ₦0";
-    return;
-  }
-
-  container.innerHTML = cart.map(item => `
-    <div class="cart-item">
-      <p><strong>${escapeHTML(item.name)}</strong></p>
-      <p>Price: ${formatPrice(item.price)}</p>
-
-      <div class="cart-quantity-controls">
-        <button type="button"
-          onclick="changeCartQuantity('${escapeHTML(item.id)}', -1)">
-          −
-        </button>
-
-        <span>${item.quantity}</span>
-
-        <button type="button"
-          onclick="changeCartQuantity('${escapeHTML(item.id)}', 1)">
-          +
-        </button>
-      </div>
-
-      <p>Subtotal: ${formatPrice(item.price * item.quantity)}</p>
-
-      <button type="button"
-        onclick="removeFromCart('${escapeHTML(item.id)}')">
-        Remove
-      </button>
-    </div>
-  `).join("");
-
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  totalElement.textContent = "Total: " + formatPrice(total);
 }
 
 
