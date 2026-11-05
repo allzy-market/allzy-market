@@ -186,7 +186,43 @@ async function loadProducts() {
   renderProducts();
   renderWishlist();
 }
+/* =========================================
+   LOAD CUSTOMER PRODUCT VARIANTS
+========================================= */
 
+async function loadProductVariants(productId) {
+  const cacheKey = String(productId);
+
+  if (productVariantsCache.has(cacheKey)) {
+    return productVariantsCache.get(cacheKey);
+  }
+
+  const { data, error } = await supabaseClient
+    .from("product_variants")
+    .select(`
+      id,
+      product_id,
+      size,
+      color,
+      sku,
+      price_override,
+      stock_quantity,
+      is_available
+    `)
+    .eq("product_id", productId)
+    .eq("is_available", true);
+
+  if (error) {
+    console.error("Product variants loading error:", error);
+    throw error;
+  }
+
+  const variants = data || [];
+
+  productVariantsCache.set(cacheKey, variants);
+
+  return variants;
+}
 /* =========================================
    PRODUCT SEARCH, FILTER AND SORT
 ========================================= */
