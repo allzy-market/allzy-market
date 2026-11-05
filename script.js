@@ -577,6 +577,116 @@ async function addToCart(productId, variantId = null) {
   alert("Product added to your cart.");
 }
 
+/* =========================================
+   CART QUANTITY, REMOVE AND DISPLAY
+========================================= */
+
+function changeCartQuantity(cartKey, change) {
+  const item = cart.find(product =>
+    product.cartKey === cartKey
+  );
+
+  if (!item) return;
+
+  if (
+    Number(change) > 0 &&
+    item.stock_quantity !== null &&
+    item.quantity >= Number(item.stock_quantity)
+  ) {
+    alert("You have reached the available stock for this option.");
+    return;
+  }
+
+  item.quantity += Number(change);
+
+  if (item.quantity <= 0) {
+    cart = cart.filter(product =>
+      product.cartKey !== cartKey
+    );
+  }
+
+  renderCart();
+}
+
+
+function removeFromCart(cartKey) {
+  cart = cart.filter(item =>
+    item.cartKey !== cartKey
+  );
+
+  renderCart();
+}
+
+
+function renderCart() {
+  const container = getElement("cart-items");
+  const totalElement = getElement("cart-total");
+
+  if (!container || !totalElement) return;
+
+  if (!cart.length) {
+    container.innerHTML = "<p>Your cart is empty.</p>";
+    totalElement.textContent = "Total: ₦0";
+    return;
+  }
+
+  container.innerHTML = cart.map(item => {
+    const option = [
+      item.size,
+      item.color
+    ].filter(Boolean).join(" / ");
+
+    return `
+      <div class="cart-item">
+
+        <p><strong>${escapeHTML(item.name)}</strong></p>
+
+        ${option
+          ? `<p>Option: ${escapeHTML(option)}</p>`
+          : ""}
+
+        <p>Price: ${formatPrice(item.price)}</p>
+
+        <div class="cart-quantity-controls">
+
+          <button
+            type="button"
+            onclick="changeCartQuantity('${escapeHTML(item.cartKey)}', -1)">
+            −
+          </button>
+
+          <span>${item.quantity}</span>
+
+          <button
+            type="button"
+            onclick="changeCartQuantity('${escapeHTML(item.cartKey)}', 1)">
+            +
+          </button>
+
+        </div>
+
+        <p>
+          Subtotal:
+          ${formatPrice(item.price * item.quantity)}
+        </p>
+
+        <button
+          type="button"
+          onclick="removeFromCart('${escapeHTML(item.cartKey)}')">
+          Remove
+        </button>
+
+      </div>
+    `;
+  }).join("");
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  totalElement.textContent = "Total: " + formatPrice(total);
+}
 
 /* =========================================
    CUSTOMER CHECKOUT AND ORDER SUBMISSION
