@@ -359,44 +359,109 @@ function renderProducts() {
   }).join("");
 }
 
-function viewProductDetails(productId) {
-  const product = products.find(item =>
-    String(item.id) === String(productId)
+async function viewProductDetails(productId) {
+  const product = products.find(
+    item => String(item.id) === String(productId)
   );
 
-  if (!product) return;
+  if (!product) {
+    showMessage("Product not found.");
+    return;
+  }
 
   const container = getElement("product-details-content");
-  if (!container) return;
 
-  const image = safeImageURL(product.image_url);
+  if (!container) {
+    showMessage("Product details could not be opened.");
+    return;
+  }
+
+  container.innerHTML = "<p>Loading product details...</p>";
+
+  const detailsSection = getElement("product-details");
+
+  if (detailsSection) {
+    detailsSection.hidden = false;
+    detailsSection.scrollIntoView({ behavior: "smooth" });
+  }
+
+  let variants = [];
+
+  try {
+    variants = await loadProductVariants(product.id);
+  } catch (error) {
+    console.error("Unable to load product variants:", error);
+    container.innerHTML =
+      "<p>Unable to load product options. Please try again.</p>";
+    return;
+  }
+
+  const variantOptions = variants.map(variant => {
+    const labels = [
+      variant.size,
+      variant.color
+    ].filter(Boolean);
+
+    const optionName = labels.length
+      ? labels.join(" / ")
+      : "Available option";
+
+    const variantPrice =
+      variant.price_override !== null &&
+      variant.price_override !== undefined
+        ? Number(variant.price_override)
+        : Number(product.price);
+
+    return `
+      <option value="${escapeHTML(String(variant.id))}">
+        ${escapeHTML(optionName)} — ${formatPrice(variantPrice)}
+      </option>
+    `;
+  }).join("");
 
   container.innerHTML = `
-    ${image
-      ? `<img src="${image}" alt="${escapeHTML(product.name)}"
-          style="width:100%;max-height:300px;object-fit:contain;">`
-      : ""}
+    <img
+      src="${safeImageURL(product.image_url)}"
+      alt="${escapeHTML(product.name)}"
+    >
 
     <h2>${escapeHTML(product.name)}</h2>
 
-    <p>${escapeHTML(product.description)}</p>
+    <p>${escapeHTML(product.description || "")}</p>
 
-    <h3>${formatPrice(product.price)}</h3>
+    <h3>${formatPrice(Number(product.price))}</h3>
 
-    <p>Delivery fee is calculated separately.</p>
+    <p>Delivery fee is separate.</p>
 
-    <button type="button"
-      onclick="addToCart('${escapeHTML(product.id)}')">
-      Add to Cart
+    ${
+      variants.length > 0
+        ? `
+          <label for="product-variant-select">
+            Choose size or colour:
+          </label>
+
+          <select id="product-variant-select" required>
+            <option value="">Select an option</option>
+            ${variantOptions}
+          </select>
+        `
+        : "<p>No additional options available.</p>"
+    }
+
+    <button
+      type="button"
+      onclick="addToCart(
+        '${escapeHTML(String(product.id))}',
+        ${
+          variants.length > 0
+            ? "document.getElementById('product-variant-select').value"
+            : "null"
+        }
+      )"
+    >
+      ADD TO CART
     </button>
   `;
-
-  setVisible("product-details", true);
-
-  getElement("product-details").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
 }
 
 
