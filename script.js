@@ -22,7 +22,7 @@ const supabaseClient = window.supabase.createClient(
 let products = [];
 let cart = [];
 let wishlist = JSON.parse(localStorage.getItem("allzyWishlist") || "[]");
-
+const productVariantsCache = new Map();
 let currentSeller = null;
 let isMarketplaceAdmin = false;
 let customerPasswordRecoveryActive = false;
@@ -175,16 +175,13 @@ async function loadProducts() {
       container.innerHTML =
         "<p>Unable to load products. Please try again.</p>";
     }
+
     return;
   }
 
-  products = (data || []).filter(product => {
-    // Keep products whose sellers have not enabled stock tracking.
-    if (!product.track_inventory) return true;
-
-    // Hide products with no remaining stock.
-    return Number(product.stock_quantity) > 0;
-  });
+  // Keep active products visible.
+  // Stock availability will be checked when customers select a product.
+  products = data || [];
 
   renderProducts();
   renderWishlist();
