@@ -923,44 +923,56 @@ async function trackOrder(event) {
     const items = Array.isArray(data.items) ? data.items : [];
 
     const productTracking = items.length
-      ? items.map(item => {
-          const productName = escapeHTML(
-            item.productName || "Product"
-          );
+  ? items.map(item => {
+      const productName = escapeHTML(
+        item.productName || "Product"
+      );
 
-          const quantity = Number(item.quantity) || 0;
+      const quantity = Number(item.quantity) || 0;
 
-          const productStatus = String(
-            item.status || "pending"
-          ).toLowerCase();
+      const productStatus = String(
+        item.status || "pending"
+      ).toLowerCase();
 
-          return `
-            <div class="product-tracking-item">
-              <h4>${productName}</h4>
+      const variantSize = item.variantSize || item.variant_size || "";
+      const variantColor = item.variantColor || item.variant_color || "";
 
-              <p>Quantity: ${quantity}</p>
+      const variant = [
+        variantSize,
+        variantColor
+      ].filter(Boolean).join(" / ");
 
-              <p>
-                Product Status:
-                <span class="order-status ${getStatusClass(productStatus)}">
-                  ${escapeHTML(productStatus.toUpperCase())}
-                </span>
-              </p>
+      return `
+        <div class="product-tracking-item">
+          <h4>${productName}</h4>
 
-              <div class="tracking-steps">
-                ${createJourney(productStatus)}
-              </div>
+          ${variant
+            ? `<p>Size / Colour: ${escapeHTML(variant)}</p>`
+            : ""}
 
-              <p class="tracking-status-message">
-                ${productStatus === "cancelled"
-                  ? "This product has been cancelled."
-                  : "This product is currently " +
-                    escapeHTML(productStatus) + "."}
-              </p>
-            </div>
-          `;
-        }).join("")
-      : "<p>Product tracking details are not available yet.</p>";
+          <p>Quantity: ${quantity}</p>
+
+          <p>
+            Product Status:
+            <span class="order-status ${getStatusClass(productStatus)}">
+              ${escapeHTML(productStatus.toUpperCase())}
+            </span>
+          </p>
+
+          <div class="tracking-steps">
+            ${createJourney(productStatus)}
+          </div>
+
+          <p class="tracking-status-message">
+            ${productStatus === "cancelled"
+              ? "This product has been cancelled."
+              : "This product is currently " +
+                escapeHTML(productStatus) + "."}
+          </p>
+        </div>
+      `;
+    }).join("")
+  : "<p>Product tracking details are not available yet.</p>";
 
     result.innerHTML = `
       <div class="tracking-journey">
