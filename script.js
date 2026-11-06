@@ -747,8 +747,9 @@ async function submitCustomerOrder(event) {
           delivery_city: customerCity,
           delivery_state: customerState,
           items: cart.map(item => ({
-            product_id: item.id,
-            quantity: item.quantity
+          product_id: item.product_id || item.id,
+          variant_id: item.variant_id || null,
+          quantity: item.quantity
           }))
         }
       }
