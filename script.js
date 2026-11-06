@@ -1140,24 +1140,35 @@ async function loadCustomerOrderHistory() {
     const items = Array.isArray(order.items) ? order.items : [];
 
     const itemsHTML = items.length
-      ? items.map(item => {
-          const productStatus = String(item.status || "pending").toLowerCase();
+  ? items.map(item => {
+      const productStatus = String(item.status || "pending").toLowerCase();
 
-          return `
-            <div class="customer-order-product">
-              <p><strong>${escapeHTML(item.product_name || "Product")}</strong></p>
-              <p>Quantity: ${Number(item.quantity) || 0}</p>
-              <p>Unit price: ${formatPrice(item.unit_price)}</p>
-              <p>
-                Product status:
-                <span class="order-status ${getStatusClass(productStatus)}">
-                  ${escapeHTML(productStatus.toUpperCase())}
-                </span>
-              </p>
-            </div>
-          `;
-        }).join("")
-      : "<p>Product details are not available.</p>";
+      const variant = [
+        item.variant_size,
+        item.variant_color
+      ].filter(Boolean).join(" / ");
+
+      return `
+        <div class="customer-order-product">
+          <p><strong>${escapeHTML(item.product_name || "Product")}</strong></p>
+
+          ${variant
+            ? `<p>Size / Colour: ${escapeHTML(variant)}</p>`
+            : ""}
+
+          <p>Quantity: ${Number(item.quantity) || 0}</p>
+          <p>Unit price: ${formatPrice(item.unit_price)}</p>
+
+          <p>
+            Product status:
+            <span class="order-status ${getStatusClass(productStatus)}">
+              ${escapeHTML(productStatus.toUpperCase())}
+            </span>
+          </p>
+        </div>
+      `;
+    }).join("")
+  : "<p>Product details are not available.</p>";
 
     const orderDate = order.created_at
       ? new Date(order.created_at).toLocaleString()
