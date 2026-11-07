@@ -434,7 +434,9 @@ console.log("VARIANT COUNT:", variants.length);
     <h3>${formatPrice(Number(product.price))}</h3>
 
     <p>Delivery fee is separate.</p>
-
+<p style="color:red;">
+  DEBUG: ${variants.length} variants received
+</p>
     ${
       variants.length > 0
         ? `
