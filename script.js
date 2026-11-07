@@ -421,7 +421,9 @@ console.log("VARIANT COUNT:", variants.length);
     `;
   }).join("");
 console.log("GENERATED VARIANT OPTIONS:", variantOptions);
-  container.innerHTML = `
+console.log("FIRST VARIANT:", variants[0]);
+console.log("OPTIONS HTML:", variantOptions);
+   container.innerHTML = `
     <img
       src="${safeImageURL(product.image_url)}"
       alt="${escapeHTML(product.name)}"
