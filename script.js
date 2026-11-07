@@ -420,7 +420,7 @@ console.log("VARIANT COUNT:", variants.length);
       </option>
     `;
   }).join("");
-
+console.log("GENERATED VARIANT OPTIONS:", variantOptions);
   container.innerHTML = `
     <img
       src="${safeImageURL(product.image_url)}"
