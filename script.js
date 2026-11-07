@@ -395,7 +395,9 @@ async function viewProductDetails(productId) {
       "<p>Unable to load product options. Please try again.</p>";
     return;
   }
-
+console.log("PRODUCT ID:", product.id);
+console.log("VARIANTS RECEIVED:", variants);
+console.log("VARIANT COUNT:", variants.length);
   const variantOptions = variants.map(variant => {
     const labels = [
       variant.size,
