@@ -1186,6 +1186,8 @@ if (customerProfileForm) {
    CUSTOMER DELIVERY ADDRESS MANAGEMENT
 ========================================= */
 
+let editingCustomerAddressId = null;
+
 async function loadCustomerAddresses() {
   const { data: { user }, error: userError } =
     await supabaseClient.auth.getUser();
@@ -1201,21 +1203,17 @@ async function loadCustomerAddresses() {
 
   if (error) {
     console.error("Address loading error:", error);
-
-    showMessage(
-      "customer-address-message",
-      "Unable to load your addresses.",
-      true
-    );
+    showMessage("customer-address-message",
+      "Unable to load your addresses.", true);
     return;
   }
 
   const addressList = getElement("customer-address-list");
-
   addressList.innerHTML = "";
 
   if (!data || data.length === 0) {
-    addressList.textContent = "You have no saved delivery addresses.";
+    addressList.textContent =
+      "You have no saved delivery addresses.";
     return;
   }
 
@@ -1231,7 +1229,15 @@ async function loadCustomerAddresses() {
       ${address.postal_code
         ? `<p>${escapeHTML(address.postal_code)}</p>`
         : ""}
-      ${address.is_default ? "<strong>Default Address</strong>" : ""}
+      ${address.is_default
+        ? "<strong>Default Address</strong>"
+        : ""}
+      <button type="button" data-edit-address="${address.id}">
+        Edit Address
+      </button>
+      <button type="button" data-delete-address="${address.id}">
+        Delete Address
+      </button>
     `;
 
     addressList.appendChild(card);
@@ -1239,7 +1245,93 @@ async function loadCustomerAddresses() {
 }
 
 
-/* SAVE CUSTOMER DELIVERY ADDRESS */
+/* EDIT AND DELETE ADDRESS BUTTONS */
+
+const customerAddressList = getElement(
+  "customer-address-list"
+);
+
+if (customerAddressList) {
+  customerAddressList.addEventListener("click", async (event) => {
+    const editButton = event.target.closest("[data-edit-address]");
+    const deleteButton = event.target.closest("[data-delete-address]");
+
+    const { data: { user }, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError || !user) return;
+
+    if (editButton) {
+      const addressId = editButton.dataset.editAddress;
+
+      const { data: address, error } = await supabaseClient
+        .from("customer_addresses")
+        .select("*")
+        .eq("id", addressId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (error || !address) {
+        showMessage("customer-address-message",
+          "Unable to load this address.", true);
+        return;
+      }
+
+      editingCustomerAddressId = address.id;
+
+      getElement("address-full-name").value = address.full_name;
+      getElement("address-phone").value = address.phone;
+      getElement("address-line").value = address.address_line;
+      getElement("address-city").value = address.city;
+      getElement("address-state").value = address.state;
+      getElement("address-country").value = address.country;
+      getElement("address-postal-code").value =
+        address.postal_code || "";
+      getElement("address-is-default").checked =
+        address.is_default;
+
+      getElement("customer-address-form")
+        .querySelector('button[type="submit"]')
+        .textContent = "Update Delivery Address";
+
+      getElement("customer-address-form").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      return;
+    }
+
+    if (deleteButton) {
+      const addressId = deleteButton.dataset.deleteAddress;
+
+      if (!confirm("Are you sure you want to delete this address?")) {
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("customer_addresses")
+        .delete()
+        .eq("id", addressId)
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Address deletion error:", error);
+        showMessage("customer-address-message",
+          "Unable to delete this address.", true);
+        return;
+      }
+
+      showMessage("customer-address-message",
+        "Delivery address deleted successfully.");
+
+      await loadCustomerAddresses();
+    }
+  });
+}
+
+
+/* SAVE OR UPDATE CUSTOMER DELIVERY ADDRESS */
 
 const customerAddressForm = getElement(
   "customer-address-form"
@@ -1253,90 +1345,93 @@ if (customerAddressForm) {
       await supabaseClient.auth.getUser();
 
     if (userError || !user) {
-      showMessage(
-        "customer-address-message",
-        "Please log in to save your address.",
-        true
-      );
+      showMessage("customer-address-message",
+        "Please log in to save your address.", true);
       return;
     }
 
-    const fullName = getElement("address-full-name").value.trim();
-    const phone = getElement("address-phone").value.trim();
-    const addressLine = getElement("address-line").value.trim();
-    const city = getElement("address-city").value.trim();
-    const state = getElement("address-state").value.trim();
-    const country = getElement("address-country").value.trim();
-    const postalCode = getElement("address-postal-code").value.trim();
-    const isDefault = getElement("address-is-default").checked;
+    const addressData = {
+      full_name: getElement("address-full-name").value.trim(),
+      phone: getElement("address-phone").value.trim(),
+      address_line: getElement("address-line").value.trim(),
+      city: getElement("address-city").value.trim(),
+      state: getElement("address-state").value.trim(),
+      country: getElement("address-country").value.trim(),
+      postal_code:
+        getElement("address-postal-code").value.trim() || null,
+      is_default: getElement("address-is-default").checked
+    };
 
-    if (!fullName || !phone || !addressLine || !city || !state || !country) {
-      showMessage(
-        "customer-address-message",
-        "Please complete all required fields.",
-        true
-      );
+    if (
+      !addressData.full_name ||
+      !addressData.phone ||
+      !addressData.address_line ||
+      !addressData.city ||
+      !addressData.state ||
+      !addressData.country
+    ) {
+      showMessage("customer-address-message",
+        "Please complete all required fields.", true);
       return;
     }
 
-    if (isDefault) {
+    if (addressData.is_default) {
       const { error: defaultError } = await supabaseClient
         .from("customer_addresses")
         .update({ is_default: false })
         .eq("user_id", user.id);
 
       if (defaultError) {
-        console.error("Default address error:", defaultError);
-
-        showMessage(
-          "customer-address-message",
-          "Unable to update your default address.",
-          true
-        );
+        showMessage("customer-address-message",
+          "Unable to update your default address.", true);
         return;
       }
     }
 
-    const { error } = await supabaseClient
-      .from("customer_addresses")
-      .insert({
-        user_id: user.id,
-        full_name: fullName,
-        phone: phone,
-        address_line: addressLine,
-        city: city,
-        state: state,
-        country: country,
-        postal_code: postalCode || null,
-        is_default: isDefault
-      });
+    let result;
 
-    if (error) {
-      console.error("Address saving error:", error);
+    if (editingCustomerAddressId !== null) {
+      result = await supabaseClient
+        .from("customer_addresses")
+        .update(addressData)
+        .eq("id", editingCustomerAddressId)
+        .eq("user_id", user.id);
+    } else {
+      result = await supabaseClient
+        .from("customer_addresses")
+        .insert({
+          ...addressData,
+          user_id: user.id
+        });
+    }
 
-      showMessage(
-        "customer-address-message",
-        "Unable to save your address. Please try again.",
-        true
-      );
+    if (result.error) {
+      console.error("Address saving error:", result.error);
+      showMessage("customer-address-message",
+        "Unable to save your address. Please try again.", true);
       return;
     }
 
-    customerAddressForm.reset();
+    const wasEditing = editingCustomerAddressId !== null;
 
+    editingCustomerAddressId = null;
+    customerAddressForm.reset();
     getElement("address-country").value = "Nigeria";
+
+    customerAddressForm
+      .querySelector('button[type="submit"]')
+      .textContent = "Save Delivery Address";
 
     showMessage(
       "customer-address-message",
-      "Your delivery address has been saved successfully."
+      wasEditing
+        ? "Your delivery address has been updated successfully."
+        : "Your delivery address has been saved successfully."
     );
 
     await loadCustomerAddresses();
   });
 }
-/* =========================================
-   CUSTOMER LOGOUT
-========================================= */
 
 async function customerLogout() {
   const { error } = await supabaseClient.auth.signOut();
