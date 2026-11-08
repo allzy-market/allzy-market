@@ -1119,100 +1119,68 @@ async function updateCustomerAccountStatus(user = null) {
   getElement("customer-dashboard-email").textContent =
     user.email || "";
 
+  getElement("customer-profile-name").value =
+    user.user_metadata?.full_name || "";
+
+  getElement("customer-profile-phone").value =
+    user.user_metadata?.phone || "";
+
   await loadCustomerOrderHistory();
 }
 
-async function loadCustomerOrderHistory() {
-  const container = getElement("customer-orders-list");
-  if (!container) return;
+/* CUSTOMER PERSONAL DETAILS */
 
-  showMessage("customer-orders-message", "Loading your orders...");
-  container.innerHTML = "";
+const customerProfileForm = getElement(
+  "customer-personal-details-form"
+);
 
-  const { data, error } = await supabaseClient.rpc(
-    "get_my_customer_orders"
-  );
+if (customerProfileForm) {
+  customerProfileForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  if (error) {
-    console.error("Customer order history error:", error);
+    const fullName = getElement(
+      "customer-profile-name"
+    ).value.trim();
+
+    const phone = getElement(
+      "customer-profile-phone"
+    ).value.trim();
+
+    if (!fullName) {
+      showMessage(
+        "customer-profile-message",
+        "Please enter your full name.",
+        true
+      );
+      return;
+    }
+
+    const { data, error } = await supabaseClient.auth.updateUser({
+      data: {
+        full_name: fullName,
+        phone: phone
+      }
+    });
+
+    if (error) {
+      console.error("Profile update error:", error);
+
+      showMessage(
+        "customer-profile-message",
+        "Unable to save your details. Please try again.",
+        true
+      );
+      return;
+    }
+
+    getElement("customer-dashboard-name").textContent =
+      data.user.user_metadata?.full_name || fullName;
+
     showMessage(
-      "customer-orders-message",
-      "Unable to load your order history. Please try again.",
-      true
+      "customer-profile-message",
+      "Your personal details have been saved successfully."
     );
-    return;
-  }
-
-  const orders = Array.isArray(data) ? data : [];
-
-  if (!orders.length) {
-    showMessage(
-      "customer-orders-message",
-      "You have no orders linked to this account yet."
-    );
-    return;
-  }
-
-  container.innerHTML = orders.map(order => {
-    const orderStatus = String(order.status || "pending").toLowerCase();
-    const items = Array.isArray(order.items) ? order.items : [];
-
-    const itemsHTML = items.length
-  ? items.map(item => {
-      const productStatus = String(item.status || "pending").toLowerCase();
-
-      const variant = [
-        item.variant_size,
-        item.variant_color
-      ].filter(Boolean).join(" / ");
-
-      return `
-        <div class="customer-order-product">
-          <p><strong>${escapeHTML(item.product_name || "Product")}</strong></p>
-
-          ${variant
-            ? `<p>Size / Colour: ${escapeHTML(variant)}</p>`
-            : ""}
-
-          <p>Quantity: ${Number(item.quantity) || 0}</p>
-          <p>Unit price: ${formatPrice(item.unit_price)}</p>
-
-          <p>
-            Product status:
-            <span class="order-status ${getStatusClass(productStatus)}">
-              ${escapeHTML(productStatus.toUpperCase())}
-            </span>
-          </p>
-        </div>
-      `;
-    }).join("")
-  : "<p>Product details are not available.</p>";
-
-    const orderDate = order.created_at
-      ? new Date(order.created_at).toLocaleString()
-      : "Not available";
-
-    return `
-      <div class="cart-section customer-order-history-item">
-        <h3>Order #${escapeHTML(order.id)}</h3>
-        <p>Date: ${escapeHTML(orderDate)}</p>
-        <p>
-          Order status:
-          <span class="order-status ${getStatusClass(orderStatus)}">
-            ${escapeHTML(orderStatus.toUpperCase())}
-          </span>
-        </p>
-        <p>Total: ${formatPrice(order.total_amount)}</p>
-        <h4>Products</h4>
-        ${itemsHTML}
-      </div>
-    `;
-  }).join("");
-
-  showMessage(
-    "customer-orders-message",
-    `You have ${orders.length} order${orders.length === 1 ? "" : "s"}.`
-  );
+  });
 }
 /* =========================================
    CUSTOMER LOGOUT
