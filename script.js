@@ -1183,6 +1183,158 @@ if (customerProfileForm) {
   });
 }
 /* =========================================
+   CUSTOMER DELIVERY ADDRESS MANAGEMENT
+========================================= */
+
+async function loadCustomerAddresses() {
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) return;
+
+  const { data, error } = await supabaseClient
+    .from("customer_addresses")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("is_default", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Address loading error:", error);
+
+    showMessage(
+      "customer-address-message",
+      "Unable to load your addresses.",
+      true
+    );
+    return;
+  }
+
+  const addressList = getElement("customer-address-list");
+
+  addressList.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    addressList.textContent = "You have no saved delivery addresses.";
+    return;
+  }
+
+  data.forEach((address) => {
+    const card = document.createElement("div");
+
+    card.innerHTML = `
+      <h4>${escapeHTML(address.full_name)}</h4>
+      <p>${escapeHTML(address.phone)}</p>
+      <p>${escapeHTML(address.address_line)}</p>
+      <p>${escapeHTML(address.city)}, ${escapeHTML(address.state)}</p>
+      <p>${escapeHTML(address.country)}</p>
+      ${address.postal_code
+        ? `<p>${escapeHTML(address.postal_code)}</p>`
+        : ""}
+      ${address.is_default ? "<strong>Default Address</strong>" : ""}
+    `;
+
+    addressList.appendChild(card);
+  });
+}
+
+
+/* SAVE CUSTOMER DELIVERY ADDRESS */
+
+const customerAddressForm = getElement(
+  "customer-address-form"
+);
+
+if (customerAddressForm) {
+  customerAddressForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const { data: { user }, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      showMessage(
+        "customer-address-message",
+        "Please log in to save your address.",
+        true
+      );
+      return;
+    }
+
+    const fullName = getElement("address-full-name").value.trim();
+    const phone = getElement("address-phone").value.trim();
+    const addressLine = getElement("address-line").value.trim();
+    const city = getElement("address-city").value.trim();
+    const state = getElement("address-state").value.trim();
+    const country = getElement("address-country").value.trim();
+    const postalCode = getElement("address-postal-code").value.trim();
+    const isDefault = getElement("address-is-default").checked;
+
+    if (!fullName || !phone || !addressLine || !city || !state || !country) {
+      showMessage(
+        "customer-address-message",
+        "Please complete all required fields.",
+        true
+      );
+      return;
+    }
+
+    if (isDefault) {
+      const { error: defaultError } = await supabaseClient
+        .from("customer_addresses")
+        .update({ is_default: false })
+        .eq("user_id", user.id);
+
+      if (defaultError) {
+        console.error("Default address error:", defaultError);
+
+        showMessage(
+          "customer-address-message",
+          "Unable to update your default address.",
+          true
+        );
+        return;
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from("customer_addresses")
+      .insert({
+        user_id: user.id,
+        full_name: fullName,
+        phone: phone,
+        address_line: addressLine,
+        city: city,
+        state: state,
+        country: country,
+        postal_code: postalCode || null,
+        is_default: isDefault
+      });
+
+    if (error) {
+      console.error("Address saving error:", error);
+
+      showMessage(
+        "customer-address-message",
+        "Unable to save your address. Please try again.",
+        true
+      );
+      return;
+    }
+
+    customerAddressForm.reset();
+
+    getElement("address-country").value = "Nigeria";
+
+    showMessage(
+      "customer-address-message",
+      "Your delivery address has been saved successfully."
+    );
+
+    await loadCustomerAddresses();
+  });
+}
+/* =========================================
    CUSTOMER LOGOUT
 ========================================= */
 
