@@ -1230,8 +1230,10 @@ async function loadCustomerAddresses() {
         ? `<p>${escapeHTML(address.postal_code)}</p>`
         : ""}
       ${address.is_default
-        ? "<strong>Default Address</strong>"
-        : ""}
+  ? "<strong>Default Address</strong>"
+  : `<button type="button" data-default-address="${address.id}">
+       Set as Default
+     </button>`}
       <button type="button" data-edit-address="${address.id}">
         Edit Address
       </button>
@@ -1260,7 +1262,52 @@ if (customerAddressList) {
       await supabaseClient.auth.getUser();
 
     if (userError || !user) return;
+const defaultButton = event.target.closest(
+  "[data-default-address]"
+);
 
+if (defaultButton) {
+  const addressId = defaultButton.dataset.defaultAddress;
+
+  const { error: resetError } = await supabaseClient
+    .from("customer_addresses")
+    .update({ is_default: false })
+    .eq("user_id", user.id);
+
+  if (resetError) {
+    showMessage(
+      "customer-address-message",
+      "Unable to update your default address.",
+      true
+    );
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("customer_addresses")
+    .update({ is_default: true })
+    .eq("id", addressId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Default address error:", error);
+
+    showMessage(
+      "customer-address-message",
+      "Unable to set this address as default.",
+      true
+    );
+    return;
+  }
+
+  showMessage(
+    "customer-address-message",
+    "Default delivery address updated successfully."
+  );
+
+  await loadCustomerAddresses();
+  return;
+}
     if (editButton) {
       const addressId = editButton.dataset.editAddress;
 
