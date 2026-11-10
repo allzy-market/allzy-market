@@ -1268,7 +1268,7 @@ const defaultButton = event.target.closest(
 
 if (defaultButton) {
   const addressId = defaultButton.dataset.defaultAddress;
-
+  console.log("Selected default address ID:", addressId);
   const { error: resetError } = await supabaseClient
     .from("customer_addresses")
     .update({ is_default: false })
