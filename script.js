@@ -1126,6 +1126,7 @@ async function updateCustomerAccountStatus(user = null) {
     user.user_metadata?.phone || "";
 
   await loadCustomerOrderHistory();
+await loadCustomerAddresses();
 }
 
 /* CUSTOMER PERSONAL DETAILS */
