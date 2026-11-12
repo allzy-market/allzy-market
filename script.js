@@ -697,7 +697,86 @@ function renderCart() {
 /* =========================================
    CUSTOMER CHECKOUT AND ORDER SUBMISSION
 ========================================= */
+async function loadCheckoutAddresses() {
+   function fillCheckoutAddress(address) {
+  if (!address) return;
 
+  getElement("customer-name").value =
+    address.full_name || "";
+
+  getElement("customer-phone").value =
+    address.phone || "";
+
+  getElement("customer-address").value = [
+    address.address_line,
+    address.postal_code,
+    address.country
+  ].filter(Boolean).join(", ");
+
+  getElement("customer-city").value =
+    address.city || "";
+
+getElement("customer-state").value =
+address.state || "";
+ async function loadCheckoutAddresses() {
+}
+  const addressSection = getElement("checkout-saved-addresses");
+  const addressSelect = getElement("checkout-address-select");
+
+  if (!addressSection || !addressSelect) return;
+
+  const { data: { user } } =
+    await supabaseClient.auth.getUser();
+
+  if (!user || user.user_metadata?.account_type !== "customer") {
+    addressSection.hidden = true;
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("customer_addresses")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("is_default", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Checkout address loading error:", error);
+    showMessage(
+      "checkout-address-message",
+      "Unable to load saved addresses.",
+      true
+    );
+    return;
+  }
+
+  addressSelect.innerHTML =
+    '<option value="">Select a delivery address</option>';
+
+  (data || []).forEach(address => {
+    const option = document.createElement("option");
+
+    option.value = address.id;
+
+    option.textContent =
+      `${address.full_name} - ${address.address_line}, ` +
+      `${address.city}, ${address.state}` +
+      (address.is_default ? " (Default)" : "");
+
+    addressSelect.appendChild(option);
+  });
+
+  addressSection.hidden = false;
+
+  const defaultAddress = (data || []).find(
+    address => address.is_default
+  );
+
+  if (defaultAddress) {
+    addressSelect.value = String(defaultAddress.id);
+    fillCheckoutAddress(defaultAddress);
+  }
+}
 async function submitCustomerOrder(event) {
   event.preventDefault();
 
