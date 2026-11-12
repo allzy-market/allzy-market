@@ -1125,8 +1125,8 @@ async function updateCustomerAccountStatus(user = null) {
   getElement("customer-profile-phone").value =
     user.user_metadata?.phone || "";
 
-  await loadCustomerOrderHistory();
-await loadCustomerAddresses();
+  await loadCustomerAddresses();
+await loadCustomerOrderHistory();
 }
 
 /* CUSTOMER PERSONAL DETAILS */
