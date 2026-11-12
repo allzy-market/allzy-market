@@ -697,8 +697,8 @@ function renderCart() {
 /* =========================================
    CUSTOMER CHECKOUT AND ORDER SUBMISSION
 ========================================= */
-async function loadCheckoutAddresses() {
-   function fillCheckoutAddress(address) {
+
+function fillCheckoutAddress(address) {
   if (!address) return;
 
   getElement("customer-name").value =
@@ -716,10 +716,10 @@ async function loadCheckoutAddresses() {
   getElement("customer-city").value =
     address.city || "";
 
-getElement("customer-state").value =
-address.state || "";
- async function loadCheckoutAddresses() {
+  getElement("customer-state").value =
+    address.state || "";
 }
+async function loadCheckoutAddresses() {
   const addressSection = getElement("checkout-saved-addresses");
   const addressSelect = getElement("checkout-address-select");
 
