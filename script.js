@@ -1193,7 +1193,12 @@ async function loadCustomerAddresses() {
   const { data: { user }, error: userError } =
     await supabaseClient.auth.getUser();
 
-  if (userError || !user) return;
+  if (userError || !user) {
+  console.error("Address login error:", userError);
+  return;
+}
+
+console.log("Address user ID:", user.id);
 
   const { data, error } = await supabaseClient
     .from("customer_addresses")
