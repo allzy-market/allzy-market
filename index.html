@@ -342,6 +342,23 @@
   <h2>Customer Delivery Details</h2>
 
   <form id="customer-order-form">
+    <div id="checkout-saved-addresses" hidden>
+
+  <label for="checkout-address-select">
+
+    Choose a Saved Delivery Address
+
+  </label>
+
+  <select id="checkout-address-select">
+
+    <option value="">Select a delivery address</option>
+
+  </select>
+
+  <p id="checkout-address-message" role="status"></p>
+
+</div>
     <label for="customer-name">Full Name</label>
     <input type="text" id="customer-name" required>
 
